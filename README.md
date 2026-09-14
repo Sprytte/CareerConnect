@@ -4,7 +4,7 @@ SOEN 341 · Concordia University · Fall 2026
 
 ## Team
 
-- **Section:** [Section]
+- **Section:** FK
 - **Team number:** [Team number]
 - **Repository:** (https://github.com/Sprytte/TicketManager)
 
@@ -12,7 +12,7 @@ SOEN 341 · Concordia University · Fall 2026
 | --- | --- | --- |
 | [Full name] | [Username] | [Assigned tasks] |
 | Elyes Jallouli | ElyesJallouli | [Assigned tasks] |
-| [Full name] | [Username] | [Assigned tasks] |
+| Arley Ndaribike | Arley100 | [Assigned tasks] |
 | [Full name] | [Username] | [Assigned tasks] |
 
 Add or remove rows to match the team. Responsibilities will be updated as tasks are assigned during each sprint.
