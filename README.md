@@ -6,12 +6,12 @@ SOEN 341 · Concordia University · Fall 2026
 
 - **Section:** [Section]
 - **Team number:** [Team number]
-- **Repository:** [Repository URL]
+- **Repository:** (https://github.com/Sprytte/TicketManager)
 
 | Name | GitHub username | Initial responsibilities |
 | --- | --- | --- |
 | [Full name] | [Username] | [Assigned tasks] |
-| [Full name] | [Username] | [Assigned tasks] |
+| Elyes Jallouli | ElyesJallouli | [Assigned tasks] |
 | [Full name] | [Username] | [Assigned tasks] |
 | [Full name] | [Username] | [Assigned tasks] |
 
