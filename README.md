@@ -10,7 +10,7 @@ SOEN 341 · Concordia University · Fall 2026
 
 | Name | GitHub username | Initial responsibilities |
 | --- | --- | --- |
-| [Full name] | [Username] | [Assigned tasks] |
+| Brendan Kelly  | BrendanKelly84213 | [Assigned tasks] |
 | Elyes Jallouli | ElyesJallouli | [Assigned tasks] |
 | Arley Ndaribike | Arley100 | [Assigned tasks] |
 | [Full name] | [Username] | [Assigned tasks] |
