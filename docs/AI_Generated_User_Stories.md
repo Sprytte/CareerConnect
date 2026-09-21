@@ -1,7 +1,9 @@
 AI-Generated User Stories
 
 Task ID/Title: Generate 10 User Stories
+
 Purpose of AI Use: Brainstorming and requirements elicitation
+
 Chat Link or Prompt/Response: “I need you to generate the 10 user stories required by the assignment “
 
 
