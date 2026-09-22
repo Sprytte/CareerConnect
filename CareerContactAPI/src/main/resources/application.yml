@@ -1,0 +1,97 @@
+# Default Spring Profile
+server:
+  port: 8080
+  error:
+    include-message: always
+
+frontend:
+  url: http://localhost:3000/
+
+backend:
+  url: http://localhost:8080/
+
+website:
+  domain: localhost
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+
+spring:
+  config:
+    activate:
+      on-profile: default
+# TODO modify for mysql/sqlite
+#  datasource:
+#    driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql:mem:///carparts
+#    username: username
+#    password: pwd
+
+---
+#Docker profile
+spring:
+  config:
+    activate:
+      on-profile: docker
+# TODO modify for mysql/sqlite
+#  datasource:
+#    url: jdbc:postgresql://postgres:5432/carparts
+#    username: username
+#    password: pwd
+#    driver-class-name: org.postgresql.Driver
+
+#  autoconfigure:
+#    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
+
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+
+server:
+  error:
+    whitelabel:
+      enabled: false
+    include-binding-errors: always
+    include-message: always
+  port: 8080
+
+frontend:
+  url: http://localhost:3000/
+
+backend:
+  url: http://localhost:8080/
+
+website:
+  domain: localhost
+
+spring.datasource.hikari.initializationFailTimeout: 60000
+---
+# for test
+spring:
+  config:
+    activate:
+      on-profile: test
+
+# TODO modify for mysql/sqlite
+#  datasource:
+#    url: jdbc:postgresql:mem:///carparts
+#    username: username
+#    password: pwd
+#    driver-class-name: org.postgresql.Driver
+#    embedded-database-connection: h2
+
+frontend:
+  url: http://localhost:3000/
+
+backend:
+  url: http://localhost:8080/
+
+website:
+  domain: localhost
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
