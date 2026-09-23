@@ -1,0 +1,82 @@
+.resume {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 32px 20px;
+  background: #f6f8fc;
+}
+
+.resume-container {
+  width: 100%;
+  max-width: 620px;
+  background: #ffffff;
+  padding: 48px;
+  border-radius: 18px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e8ecf2;
+}
+
+.resume-title {
+  margin: 0;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.resume-subtitle {
+  margin: 14px 0 30px;
+  text-align: center;
+  color: #6b7280;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.resume-upload-box {
+  border: 2px dashed #cbd5e1;
+  border-radius: 14px;
+  padding: 32px 24px;
+  text-align: center;
+  background: #fafbfc;
+  margin-bottom: 22px;
+}
+
+.resume-upload-label {
+  display: block;
+  margin-bottom: 18px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #334155;
+}
+
+.resume-selected-file {
+  margin-bottom: 20px;
+  padding: 14px 16px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  color: #334155;
+}
+
+.resume-upload-button {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: #111827;
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.resume-upload-button:hover {
+  background: #1f2937;
+}
+
+.resume-message {
+  margin-top: 18px;
+  text-align: center;
+  color: #475569;
+  font-size: 14px;
+}
