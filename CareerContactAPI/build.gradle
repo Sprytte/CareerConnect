@@ -31,15 +31,16 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.springframework.boot:spring-boot-starter-webservices'
     implementation "org.mapstruct:mapstruct:${mapstructVersion}"
-    implementation 'org.glassfish.jakarta.validation:jakarta.validation-api:3.0.0'
+//    implementation 'org.glassfish.jakarta.validation:jakarta.validation-api:3.0.0'
     //TODO change below so that it uses data- for mysql
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.json:json:20231013'
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     implementation 'com.squareup.okhttp3:okhttp:4.9.2'
-    implementation 'com.fasterxml.jackson.databind:jackson-databind:3.0.3'
+//    implementation 'com.fasterxml.jackson.databind:jackson-databind:3.0.3'
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
     implementation 'org.springframework.boot:spring-boot-starter-mail:3.1.2'
+    implementation 'com.amazonaws:aws-java-sdk:1.12.429'
 
     compileOnly 'org.projectlombok:lombok'
     compileOnly "org.mapstruct:mapstruct-processor:${mapstructVersion}"
