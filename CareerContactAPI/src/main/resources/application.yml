@@ -23,11 +23,11 @@ spring:
     activate:
       on-profile: default
 # TODO modify for mysql/sqlite
-#  datasource:
-#    driver-class-name: org.postgresql.Driver
-#    url: jdbc:postgresql:mem:///carparts
-#    username: username
-#    password: pwd
+  datasource:
+    driver-class-name: org.sqlite.JDBC
+    url: jdbc:sqlite:memory:myDb
+    username: username
+    password: pwd
 
 ---
 #Docker profile

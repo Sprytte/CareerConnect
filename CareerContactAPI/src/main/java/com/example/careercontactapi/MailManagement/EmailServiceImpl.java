@@ -17,45 +17,45 @@ import java.util.Properties;
 @Slf4j
 @Service
 public class EmailServiceImpl implements EmailService{
-    private final JavaMailSender mailSender;
-    @Value("${spring.mail.username}")
-    private String sender;
-    Session session;
+//    private final JavaMailSender mailSender;
+//    @Value("${spring.mail.username}")
+//    private String sender;
+//    Session session;
 
-    @Generated
-    public EmailServiceImpl(@Value("${spring.mail.username}") String username,
-                            @Value("${spring.mail.password}") String password,
-                            JavaMailSender javaMailSender) {
-
-        this.mailSender = javaMailSender;
-
-        Properties prop = new Properties();
-        prop.put("mail.smtp.host", "smtp.gmail.com");
-        prop.put("mail.smtp.port", "587");
-        prop.put("mail.smtp.auth", "true");
-        prop.put("mail.smtp.starttls.enable", "true");
-
-        session = Session.getInstance(prop,
-                new Authenticator() {
-                    @Generated
-                    protected PasswordAuthentication getPasswordAuthentication() {
-                        return new PasswordAuthentication(username, password);
-                    }
-                });
-    }
-
+//    @Generated
+//    public EmailServiceImpl(@Value("${spring.mail.username}") String username,
+//                            @Value("${spring.mail.password}") String password,
+//                            JavaMailSender javaMailSender) {
+//
+//        this.mailSender = javaMailSender;
+//
+//        Properties prop = new Properties();
+//        prop.put("mail.smtp.host", "smtp.gmail.com");
+//        prop.put("mail.smtp.port", "587");
+//        prop.put("mail.smtp.auth", "true");
+//        prop.put("mail.smtp.starttls.enable", "true");
+//
+//        session = Session.getInstance(prop,
+//                new Authenticator() {
+//                    @Generated
+//                    protected PasswordAuthentication getPasswordAuthentication() {
+//                        return new PasswordAuthentication(username, password);
+//                    }
+//                });
+//    }
+//
     @Override
     public String sendMail(String email) {
-        log.info("EMAIL: " + sender);
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("RAHH");
-        message.setText("FUCK YOUUUU");
-
-        mailSender.send(message);
-
-        mailSender.send(message);
+//        log.info("EMAIL: " + sender);
+//
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setTo(email);
+//        message.setSubject("Email subject");
+//        message.setText("Email body");
+//
+//        mailSender.send(message);
+//
+//        mailSender.send(message);
         return "Success!";
     }
 
