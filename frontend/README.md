@@ -1,75 +1,39 @@
-# React + TypeScript + Vite
+# CareerConnect frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+The welcome page uses React, TypeScript, and Vite with the project's existing dependencies.
 
-Currently, two official plugins are available:
+## Local setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Install Node.js 22.12+ and npm (the locked Vite version also supports Node.js 20.19+ within version 20). From PowerShell:
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+Set-Location C:\Users\ndari\CareerConnect\frontend
+npm ci
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Open the local URL printed by Vite. Stop the server with Ctrl+C.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Checks and production preview
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```powershell
+Set-Location C:\Users\ndari\CareerConnect\frontend
+npm run lint
+npm run build
+npm run preview
 ```
+
+The build checks TypeScript and produces the production assets. Open the URL printed by the preview server. There is currently no automated test script in `package.json`.
+
+Check desktop and mobile layouts, navigation links, keyboard focus, and reduced-motion behavior. Sign in should remain disabled.
+
+## Current scope
+
+- A responsive welcome page with reusable `SiteHeader` and `SiteFooter` components.
+- In-page links to Features, How it works, and the top of the page.
+- Static feature descriptions and a decorative account/resume preview. The preview is hidden from assistive technology and does not display account data or accept uploads.
+- Sign-in remains disabled pending the team's authentication decision. Authentication routing and integration will be connected once that flow is agreed.
+
+This page does not implement authentication, resume management, or backend integration. It does not require a backend service, API keys, or environment variables to run.
+
+`src/App.tsx` composes the page, `src/App.css` contains component and responsive styles, and `src/index.css` holds shared document defaults. Header and footer markup lives in `src/components`.

@@ -1,5 +1,8 @@
+import SiteHeader from './components/SiteHeader'
+import SiteFooter from './components/SiteFooter'
 import './App.css'
 
+// Static welcome-page content; these cards do not fetch account or resume data.
 const features = [
   {
     number: '01',
@@ -15,30 +18,10 @@ const features = [
 
 function App() {
   return (
-    <div className="site-shell">
-      <header className="site-header">
-        <a className="brand" href="#top" aria-label="CareerConnect home">
-          <span className="brand-mark" aria-hidden="true">C</span>
-          <span>Career<span className="brand-accent">Connect</span></span>
-        </a>
+    <div className="site-shell" id="top">
+      <SiteHeader />
 
-        <nav className="site-nav" aria-label="Main navigation">
-          <a href="#features">Features</a>
-          <a href="#how-it-works">How it works</a>
-        </nav>
-
-        {/* Replace this disabled button when the team confirms the auth flow. */}
-        <button
-          className="header-sign-in"
-          type="button"
-          disabled
-          title="Sign in will be connected after authentication is configured"
-        >
-          Sign in <span aria-hidden="true">↗</span>
-        </button>
-      </header>
-
-      <main id="top">
+      <main>
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
             <div className="eyebrow"><span className="eyebrow-dot" /> A CLEARER WAY FORWARD</div>
@@ -55,7 +38,8 @@ function App() {
             </div>
             <div className="hero-note"><span className="note-line" /> Built around the way you work.</div>
           </div>
-
+          {/* Decorative account preview: static content hidden from assistive
+              technology, with no account data or resume upload behavior. */}
           <div className="hero-visual" aria-hidden="true">
             <div className="visual-glow" />
             <div className="visual-card">
@@ -100,7 +84,7 @@ function App() {
         </section>
       </main>
 
-      <footer className="site-footer"><span>CareerConnect</span><span>Made for your next move.</span></footer>
+      <SiteFooter />
     </div>
   )
 }
