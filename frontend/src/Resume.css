@@ -3,8 +3,10 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 32px 20px;
-  background: #f6f8fc;
+  padding: 40px 20px;
+  background: #f8fafc;
+  font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
 .resume-container {
@@ -12,71 +14,115 @@
   max-width: 620px;
   background: #ffffff;
   padding: 48px;
-  border-radius: 18px;
-  box-shadow: 0 12px 35px rgba(0, 0, 0, 0.08);
-  border: 1px solid #e8ecf2;
+  border: 1px solid #e1e8ef;
+  border-radius: 20px;
+  box-shadow:
+    0 24px 60px rgba(28, 45, 68, 0.08),
+    0 4px 12px rgba(28, 45, 68, 0.04);
 }
 
 .resume-title {
   margin: 0;
   text-align: center;
-  font-size: 32px;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: 34px;
+  font-weight: 760;
+  letter-spacing: -0.04em;
+  color: #16213b;
 }
 
 .resume-subtitle {
-  margin: 14px 0 30px;
+  max-width: 500px;
+  margin: 14px auto 32px;
   text-align: center;
-  color: #6b7280;
+  color: #58657a;
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.65;
 }
 
 .resume-upload-box {
-  border: 2px dashed #cbd5e1;
-  border-radius: 14px;
-  padding: 32px 24px;
+  border: 2px dashed #b4c3cd;
+  border-radius: 15px;
+  padding: 34px 24px;
   text-align: center;
-  background: #fafbfc;
+  background: #f8fafc;
   margin-bottom: 22px;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+}
+
+.resume-upload-box:hover {
+  border-color: #168b87;
+  background: #f4fbf9;
 }
 
 .resume-upload-label {
   display: block;
   margin-bottom: 18px;
   font-size: 18px;
-  font-weight: 600;
-  color: #334155;
+  font-weight: 700;
+  color: #16213b;
+}
+
+.resume-upload-box input[type="file"] {
+  color: #58657a;
+  font-size: 14px;
 }
 
 .resume-selected-file {
   margin-bottom: 20px;
   padding: 14px 16px;
-  background: #f1f5f9;
-  border-radius: 10px;
-  color: #334155;
+  background: #e8f6f2;
+  border: 1px solid #daf3ee;
+  border-radius: 11px;
+  color: #16213b;
+  font-size: 14px;
+}
+
+.resume-selected-file strong {
+  color: #168b87;
 }
 
 .resume-upload-button {
   width: 100%;
-  padding: 14px;
+  padding: 15px;
   border: none;
-  border-radius: 10px;
-  background: #111827;
+  border-radius: 11px;
+  background: #17243d;
   color: #ffffff;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 12px 24px rgba(22, 33, 59, 0.14);
+  transition:
+    background 0.2s,
+    transform 0.2s;
 }
 
 .resume-upload-button:hover {
-  background: #1f2937;
+  background: #263f61;
+  transform: translateY(-2px);
+}
+
+.resume-upload-button:focus-visible {
+  outline: 3px solid #29a5a5;
+  outline-offset: 4px;
 }
 
 .resume-message {
   margin-top: 18px;
   text-align: center;
-  color: #475569;
+  color: #168b87;
   font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .resume-container {
+    padding: 32px 24px;
+  }
+
+  .resume-title {
+    font-size: 28px;
+  }
 }
