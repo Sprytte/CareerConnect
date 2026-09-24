@@ -4,10 +4,10 @@ The welcome page uses React, TypeScript, and Vite with the project's existing de
 
 ## Local setup
 
-Install Node.js 22.12+ and npm (the locked Vite version also supports Node.js 20.19+ within version 20). From PowerShell:
+Install Node.js 22.12+ and npm (the locked Vite version also supports Node.js 20.19+ within version 20). From the repository root in PowerShell:
 
 ```powershell
-Set-Location C:\Users\ndari\CareerConnect\frontend
+cd frontend
 npm ci
 npm run dev
 ```
@@ -16,8 +16,10 @@ Open the local URL printed by Vite. Stop the server with Ctrl+C.
 
 ## Checks and production preview
 
+From the repository root:
+
 ```powershell
-Set-Location C:\Users\ndari\CareerConnect\frontend
+cd frontend
 npm run lint
 npm run build
 npm run preview
