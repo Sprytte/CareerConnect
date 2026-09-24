@@ -1,121 +1,91 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import SiteHeader from './components/SiteHeader'
+import SiteFooter from './components/SiteFooter'
 import './App.css'
 
+// Static welcome-page content; these cards do not fetch account or resume data.
+const features = [
+  {
+    number: '01',
+    title: 'Your account',
+    description: 'A simple starting point for signing in and accessing your space.',
+  },
+  {
+    number: '02',
+    title: 'Your resume',
+    description: 'A dedicated place to upload and manage your resume.',
+  },
+]
+
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="site-shell" id="top">
+      <SiteHeader />
 
-      <div className="ticks"></div>
+      <main>
+        <section className="hero" aria-labelledby="hero-title">
+          <div className="hero-copy">
+            <div className="eyebrow"><span className="eyebrow-dot" /> A CLEARER WAY FORWARD</div>
+            <h1 id="hero-title">Make room for your <em>next move.</em></h1>
+            <p className="hero-description">
+              Bring your career essentials together in one place. Start with your
+              account and resume, then build from there.
+            </p>
+            <div className="hero-actions">
+              <a className="primary-action" href="#features">
+                Explore CareerConnect <span aria-hidden="true">↗</span>
+              </a>
+              <a className="text-action" href="#how-it-works">See how it works <span aria-hidden="true">↓</span></a>
+            </div>
+            <div className="hero-note"><span className="note-line" /> Built around the way you work.</div>
+          </div>
+          {/* Decorative account preview: static content hidden from assistive
+              technology, with no account data or resume upload behavior. */}
+          <div className="hero-visual" aria-hidden="true">
+            <div className="visual-glow" />
+            <div className="visual-card">
+              <div className="visual-topline"><span>CC / PERSONAL SPACE</span><span className="visual-spark">✦</span></div>
+              <div className="visual-avatar">A</div>
+              <div className="visual-greeting">Your next chapter<br /><strong>starts here.</strong></div>
+              <div className="visual-divider" />
+              <div className="visual-resume">
+                <span className="file-icon"><span>≡</span></span>
+                <span className="file-text"><strong>Your resume</strong><small>Keep your experience close.</small></span>
+                <span className="file-arrow">↗</span>
+              </div>
+              <div className="visual-footer">ONE PLACE. MORE POSSIBILITIES.</div>
+            </div>
+            <span className="visual-orbit visual-orbit-one" />
+            <span className="visual-orbit visual-orbit-two" />
+          </div>
+        </section>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="features" id="features" aria-labelledby="features-title">
+          <div className="section-heading">
+            <span className="section-kicker">THE FIRST STEPS</span>
+            <h2 id="features-title">The essentials, in one place.</h2>
+            <p>A focused place to get started with CareerConnect.</p>
+          </div>
+          <div className="feature-grid">
+            {features.map((feature) => (
+              <article className="feature-card" key={feature.number}>
+                <span className="feature-number">{feature.number} /</span>
+                <h3>{feature.title}</h3>
+                <p>{feature.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+        <section className="closing" id="how-it-works" aria-labelledby="closing-title">
+          <span className="section-kicker">KEEP MOVING</span>
+          <h2 id="closing-title">A place for what comes next.</h2>
+          <p>Create an account, add your resume, and keep your career details within reach.</p>
+          <a href="#top">Back to top <span aria-hidden="true">↑</span></a>
+        </section>
+      </main>
+
+      <SiteFooter />
+    </div>
   )
 }
 
