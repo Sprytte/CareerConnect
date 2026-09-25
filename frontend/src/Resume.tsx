@@ -5,16 +5,20 @@ const Resume = () => {
   const [resume, setResume] = useState<File | null>(null);
   const [message, setMessage] = useState("");
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const selectedFile = event.target.files?.[0];
 
     if (selectedFile) {
       setResume(selectedFile);
-      setMessage("");
+      setMessage("Resume selected and ready to upload.");
     }
   };
 
-  const handleUpload = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleUpload = (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
 
     if (!resume) {
@@ -22,7 +26,7 @@ const Resume = () => {
       return;
     }
 
-    setMessage("Resume selected and ready to upload.");
+    // Backend API upload will be added here later.
   };
 
   return (
@@ -31,7 +35,8 @@ const Resume = () => {
         <h2 className="resume-title">Resume Management</h2>
 
         <p className="resume-subtitle">
-          Upload your resume so you can use it when applying for jobs through CareerConnect.
+          Upload your resume so you can use it when applying for jobs through
+          CareerConnect.
         </p>
 
         <form onSubmit={handleUpload}>
@@ -53,14 +58,15 @@ const Resume = () => {
             </div>
           )}
 
-          <button className="resume-upload-button" type="submit">
+          <button
+            className="resume-upload-button"
+            type="submit"
+          >
             Upload Resume
           </button>
 
           {message && (
-            <p className="resume-message">
-              {message}
-            </p>
+            <p className="resume-message">{message}</p>
           )}
         </form>
       </div>
