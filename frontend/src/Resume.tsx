@@ -1,5 +1,6 @@
 import { useState } from "react";
 import "./Resume.css";
+import { backendUrl } from "./constants";
 
 type ResumeResponse = {
   id: number;
@@ -10,9 +11,7 @@ type ResumeResponse = {
   uploadedAt: string;
 };
 
-const backendUrl = (
-  import.meta.env.VITE_BACKEND_URL || "http://localhost:8080"
-).replace(/\/$/, "");
+
 
 const Resume = () => {
   const [resume, setResume] = useState<File | null>(null);
