@@ -1,80 +1,196 @@
 package com.example.careercontactapi.ResumeManagement.businesslayer;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.example.careercontactapi.UserManagement.datalayer.UserRepository;
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.careercontactapi.ResumeManagement.datalayer.Resume;
+import com.example.careercontactapi.ResumeManagement.datalayer.ResumeRepository;
+import com.example.careercontactapi.ResumeManagement.presentationlayer.ResumeResponseModel;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 
-@RequiredArgsConstructor
 @Service
 public class ResumeServiceImpl implements ResumeService {
-    private final UserRepository userRepository;
-    private static final Logger log = LoggerFactory.getLogger(ResumeServiceImpl.class);
 
-    @Value("${amazonProperties.endpointUrl}")
-    private String endpointUrl;
-    @Value("${amazonProperties.bucketName}")
-    private String bucketName;
-    @Value("${amazonProperties.accessKey}")
-    private String accessKey;
-    @Value("${amazonProperties.secretKey}")
-    private String secretKey;
-    private AmazonS3Client s3client;
+    private static final long MAX_FILE_SIZE = 5L * 1024 * 1024;
 
-    @PostConstruct
-    private void initializeAmazon() {
-        AWSCredentials credentials = new BasicAWSCredentials(this.accessKey, this.secretKey);
-        this.s3client = new AmazonS3Client(credentials);
+    private final ResumeRepository resumeRepository;
+
+    @Value("${resume.storage-path:uploads/resumes}")
+    private String storagePath;
+
+    public ResumeServiceImpl(ResumeRepository resumeRepository) {
+        this.resumeRepository = resumeRepository;
     }
 
     @Override
-    public String uploadUserImage(String userId, MultipartFile multipartFile) {
-        //TODO should probably accept actual user object and save the resume file link to that user
-        // or as its own resume entity, dealer's choice.
-//        if(!userRepository.existsByUserId(userId))
-//            throw new NotFoundException("User with userId: " + userId + " does not exist.");
+    public ResumeResponseModel uploadResume(String userId, MultipartFile file) {
+        validateFile(file);
 
-        String fileUrl = "";
-        try {
-            File file = convertMultiPartToFile(multipartFile);
-            String fileName = generateFileName(multipartFile);
-            fileUrl = endpointUrl + "/" + "user_images" + "/" + fileName;
-            uploadFileTos3bucket(fileName, file);
-            file.delete();
-        } catch (Exception e) {
-            e.printStackTrace();
+        String originalFileName = file.getOriginalFilename();
+
+        if (originalFileName == null || originalFileName.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "File name is required"
+            );
         }
 
-        return fileUrl;
+        String extension = getExtension(originalFileName);
+        String contentType = getContentType(extension);
+        String storedFileName = UUID.randomUUID() + "." + extension;
+
+        try {
+            Path directory = Paths.get(storagePath);
+            Files.createDirectories(directory);
+
+            Path filePath = directory.resolve(storedFileName);
+            file.transferTo(filePath);
+
+            Resume resume = Resume.builder()
+                    .userId(userId)
+                    .originalFileName(originalFileName)
+                    .storedFileName(storedFileName)
+                    .contentType(contentType)
+                    .sizeBytes(file.getSize())
+                    .uploadedAt(LocalDateTime.now())
+                    .build();
+
+            return toResponseModel(resumeRepository.save(resume));
+
+        } catch (IOException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Unable to store the uploaded file",
+                    e
+            );
+        }
     }
 
-    private File convertMultiPartToFile(MultipartFile file) throws IOException {
-        File convFile = new File(file.getOriginalFilename());
-        FileOutputStream fos = new FileOutputStream(convFile);
-        fos.write(file.getBytes());
-        fos.close();
-        return convFile;
-    }
-    private String generateFileName(MultipartFile multiPart) {
-        return new Date().getTime() + "-" + multiPart.getOriginalFilename().replace(" ", "_");
-    }
-    private void uploadFileTos3bucket(String fileName, File file) {
-        s3client.putObject(new PutObjectRequest(bucketName + "/user_images", fileName, file)
-                .withCannedAcl(CannedAccessControlList.PublicRead));
+    @Override
+    public List<ResumeResponseModel> getResumesByUser(String userId) {
+        return resumeRepository
+                .findByUserIdOrderByUploadedAtDesc(userId)
+                .stream()
+                .map(this::toResponseModel)
+                .toList();
     }
 
+    @Override
+    public ResumeFile downloadResume(Integer resumeId) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Resume not found"
+                ));
+
+        Path filePath = Paths.get(storagePath, resume.getStoredFileName());
+
+        if (!Files.exists(filePath)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Resume file not found"
+            );
+        }
+
+        return new ResumeFile(
+                new FileSystemResource(filePath),
+                resume.getOriginalFileName(),
+                resume.getContentType()
+        );
+    }
+
+    @Override
+    public void deleteResume(Integer resumeId) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Resume not found"
+                ));
+
+        Path filePath = Paths.get(storagePath, resume.getStoredFileName());
+
+        try {
+            Files.deleteIfExists(filePath);
+            resumeRepository.delete(resume);
+        } catch (IOException e) {
+            throw new ResponseStatusException(
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Unable to delete resume",
+                    e
+            );
+        }
+    }
+
+    private void validateFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "File is required"
+            );
+        }
+
+        if (file.getSize() > MAX_FILE_SIZE) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "File size must not exceed 5 MB"
+            );
+        }
+
+        String fileName = file.getOriginalFilename();
+
+        if (fileName == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "File name is required"
+            );
+        }
+
+        String extension = getExtension(fileName);
+
+        if (!extension.equals("pdf") && !extension.equals("docx")) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Only PDF and DOCX files are supported"
+            );
+        }
+    }
+
+    private String getExtension(String fileName) {
+        int lastDot = fileName.lastIndexOf('.');
+
+        if (lastDot == -1) {
+            return "";
+        }
+
+        return fileName.substring(lastDot + 1).toLowerCase();
+    }
+
+    private String getContentType(String extension) {
+        if (extension.equals("pdf")) {
+            return "application/pdf";
+        }
+
+        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    }
+
+    private ResumeResponseModel toResponseModel(Resume resume) {
+        return new ResumeResponseModel(
+                resume.getId(),
+                resume.getUserId(),
+                resume.getOriginalFileName(),
+                resume.getContentType(),
+                resume.getSizeBytes(),
+                resume.getUploadedAt()
+        );
+    }
 }
