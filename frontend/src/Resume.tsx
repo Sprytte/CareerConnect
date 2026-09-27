@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./Resume.css";
 import { backendUrl } from "./constants";
 
@@ -13,8 +13,48 @@ type ResumeResponse = {
 
 const Resume = () => {
   const [resume, setResume] = useState<File | null>(null);
+  const [resumes, setResumes] = useState<ResumeResponse[]>([]);
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+  const [isLoadingResumes, setIsLoadingResumes] = useState(true);
+
+  /*
+    TEMPORARY:
+    Replace this with the logged-in user's ID
+    once the authentication frontend is merged.
+  */
+  const userId = "TEMP_USER_ID";
+
+  const loadResumes = async () => {
+    try {
+      setIsLoadingResumes(true);
+
+      const response = await fetch(
+        `${backendUrl}/api/v1/resumes/users/${encodeURIComponent(userId)}`,
+        {
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        setMessage(errorText || "Could not load resumes.");
+        return;
+      }
+
+      const data: ResumeResponse[] = await response.json();
+      setResumes(data);
+    } catch (error) {
+      console.error("Resume loading error:", error);
+      setMessage("Could not connect to the backend.");
+    } finally {
+      setIsLoadingResumes(false);
+    }
+  };
+
+  useEffect(() => {
+    loadResumes();
+  }, []);
 
   const validateAndSetResume = (selectedFile: File) => {
     const validExtensions = [".pdf", ".docx"];
@@ -72,13 +112,6 @@ const Resume = () => {
       return;
     }
 
-    /*
-      TEMPORARY:
-      Replace this with the real logged-in userId
-      once the authentication frontend is merged.
-    */
-    const userId = "TEMP_USER_ID";
-
     const formData = new FormData();
     formData.append("file", resume);
 
@@ -104,6 +137,9 @@ const Resume = () => {
       const data: ResumeResponse = await response.json();
 
       setMessage(`Successfully uploaded ${data.fileName}.`);
+      setResume(null);
+
+      await loadResumes();
     } catch (error) {
       console.error("Resume upload error:", error);
       setMessage("Could not connect to the backend.");
@@ -118,8 +154,7 @@ const Resume = () => {
         <h2 className="resume-title">Resume Management</h2>
 
         <p className="resume-subtitle">
-          Upload your resume so you can use it when applying for jobs through
-          CareerConnect.
+          Upload and manage your resumes for CareerConnect.
         </p>
 
         <form onSubmit={handleUpload}>
@@ -157,6 +192,38 @@ const Resume = () => {
             <p className="resume-message">{message}</p>
           )}
         </form>
+
+        <div className="resume-list">
+          <h3>Your Resumes</h3>
+
+          {isLoadingResumes ? (
+            <p className="resume-message">Loading resumes...</p>
+          ) : resumes.length === 0 ? (
+            <p className="resume-message">
+              You haven't uploaded any resumes yet.
+            </p>
+          ) : (
+            resumes.map((uploadedResume) => (
+              <div
+                className="resume-selected-file"
+                key={uploadedResume.id}
+              >
+                <strong>{uploadedResume.fileName}</strong>
+
+                <div>
+                  {(uploadedResume.sizeBytes / 1024).toFixed(1)} KB
+                </div>
+
+                <div>
+                  Uploaded:{" "}
+                  {new Date(
+                    uploadedResume.uploadedAt
+                  ).toLocaleDateString()}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </section>
   );
