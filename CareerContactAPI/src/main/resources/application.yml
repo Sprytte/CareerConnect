@@ -25,9 +25,14 @@ spring:
 # TODO modify for mysql/sqlite
   datasource:
     driver-class-name: org.sqlite.JDBC
-    url: jdbc:sqlite:memory:myDb
+    url: "jdbc:sqlite::memory:"
     username: username
     password: pwd
+    hikari:
+      maximum-pool-size: 1
+  jpa:
+    hibernate:
+      ddl-auto: none
 
 ---
 #Docker profile
