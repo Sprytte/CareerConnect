@@ -16,7 +16,7 @@ import lombok.NoArgsConstructor;
 public class User {
     //TODO add more fields as necessary
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "user_id")
@@ -27,4 +27,3 @@ public class User {
     @Column(name = "profile_picture_url")
     private String pictureUrl;
 }
-
