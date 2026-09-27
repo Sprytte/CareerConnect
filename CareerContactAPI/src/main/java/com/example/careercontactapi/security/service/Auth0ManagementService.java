@@ -103,7 +103,7 @@ public class Auth0ManagementService {
         //Creating user
         RequestBody body = RequestBody.create(MediaType.parse("application/json"), getFormattedBody(employeeRequestModel));
         Request request = new Request.Builder()
-                .url("https://canadawidecarparts.us.auth0.com/api/v2/users")
+                .url(issuer + "api/v2/users")
                 .method("POST", body)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", "Bearer " + accessToken)
@@ -155,7 +155,7 @@ public class Auth0ManagementService {
         RequestBody body = RequestBody.create(MediaType.parse("application/json"), getPatchFormatterBody(employeeRequestModel));
         //String id = jsonNode.path("user_id").asText().replace("|", "%7C");
         Request request = new Request.Builder()
-                .url("https://canadawidecarparts.us.auth0.com/api/v2/users/" + userId)
+                .url(issuer + "api/v2/users/" + userId)
                 .method("PATCH", body)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", "Bearer " + accessToken)
@@ -225,8 +225,14 @@ public class Auth0ManagementService {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-        log.info("Access Token: " + extractToken(response.body()));
-        return extractToken(response.body());
+        if (response.statusCode() < 200 || response.statusCode() >= 300) {
+            throw new IOException("Auth0 Management API token request failed (" +
+                    response.statusCode() + "): " + response.body());
+        }
+
+        String accessToken = extractToken(response.body());
+        log.info("Received Auth0 Management API access token");
+        return accessToken;
     }
 
 
@@ -273,7 +279,7 @@ public class Auth0ManagementService {
 
         OkHttpClient client = new OkHttpClient().newBuilder().build();
         Request request = new Request.Builder()
-                .url("https://canadawidecarparts.us.auth0.com/api/v2/users/" + userId)
+                .url(issuer + "api/v2/users/" + userId)
                 .method("DELETE", null)
                 .addHeader("Authorization", "Bearer " + accessToken)
                 .build();
@@ -301,7 +307,7 @@ public class Auth0ManagementService {
         RequestBody body = RequestBody.create(MediaType.parse("application/json"), getPatchFormatterBodyUser(userRequestModel));
         //String id = jsonNode.path("user_id").asText().replace("|", "%7C");
         Request request = new Request.Builder()
-                .url("https://canadawidecarparts.us.auth0.com/api/v2/users/" + userId)
+                .url(issuer + "api/v2/users/" + userId)
                 .method("PATCH", body)
                 .addHeader("Content-Type", "application/json")
                 .addHeader("Authorization", "Bearer " + accessToken)
@@ -342,7 +348,15 @@ public class Auth0ManagementService {
     }
 
     private String extractToken(String response) {
-        return response.split(",")[0].split(":")[1].replace("\"", "");
+        try {
+            String token = new ObjectMapper().readTree(response).path("access_token").asText();
+            if (token.isBlank()) {
+                throw new IllegalStateException("Auth0 response did not contain access_token");
+            }
+            return token;
+        } catch (IOException e) {
+            throw new IllegalStateException("Unable to parse Auth0 token response", e);
+        }
     }
 
     //make a method to get the roles (build request) and then maybe add them as a cookie? for convenience? debatable
