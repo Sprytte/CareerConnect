@@ -65,16 +65,27 @@
   justify-content: flex-end;
   flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
 }
 
 .header-account form {
   margin: 0;
+  flex-shrink: 0;
 }
 
 .header-account-name,
 .header-account-note {
   font-size: 13px;
   color: #526078;
+}
+/* Keep long display names from crowding the account controls. */
+.header-account-name {
+  display: inline-block;
+  min-width: 0;
+  max-width: clamp(5rem, 18vw, 12rem);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .header-sign-in {

@@ -60,6 +60,13 @@ confirm that the backend redirects to the frontend after logout.
 Other API calls that need the session should use `credentials: 'include'`.
 Role-based pages also need server-enforced authorization; hiding a link in React
 does not protect backend routes.
+Session state is loaded by `src/auth/SessionProvider.tsx`, mounted in
+`src/main.tsx`. Components read that shared state through `useSession()`
+from `src/auth/session.ts`.
+
+The current-user endpoint and response shape remain provisional until
+the backend implementation is available. Long display names are visually
+truncated in the header; the choice of display-name field is still pending.
 
 ## Current scope
 

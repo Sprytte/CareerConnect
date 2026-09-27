@@ -24,7 +24,12 @@ export default function SiteHeader() {
         <div className="header-account" aria-live="polite">
           {session.status === 'signed-in' ? (
             <>
-              <span className="header-account-name">Hi, {session.user.name}</span>
+              <span
+                className="header-account-name"
+                title={session.user.name}
+              >
+                Hi, {session.user.name}
+              </span>
               {/* A normal POST navigation lets the backend finish the Auth0
                   logout redirect; a fetch would not navigate the browser. */}
               <form method="post" action={logoutUrl}>
