@@ -6,7 +6,7 @@ export default function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <a className="brand" href="#top" aria-label="CareerConnect home">
+        <a className="brand" href="/" aria-label="CareerConnect home">
           <span className="brand-mark" aria-hidden="true">
             C
           </span>
@@ -19,6 +19,7 @@ export default function SiteHeader() {
         <nav className="site-nav" aria-label="Main navigation">
           <a href="#features">Features</a>
           <a href="#how-it-works">How it works</a>
+          <a href="/account/resume">My resume</a>
         </nav>
 
         <div className="header-account" aria-live="polite">

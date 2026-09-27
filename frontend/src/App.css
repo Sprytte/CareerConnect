@@ -473,21 +473,57 @@
   font-weight: 760;
 }
 
+/* Account-access messages shown before the resume page can be opened. */
+.account-access {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 72px 6%;
+  min-height: 50vh;
+}
+
+.account-access h1 {
+  margin: 0 0 16px;
+  color: #16213b;
+  font-size: clamp(26px, 4vw, 38px);
+  line-height: 1.2;
+}
+
+.account-access p {
+  margin: 0;
+  color: #526078;
+  line-height: 1.7;
+}
+
+.account-access-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 24px;
+}
+
 /* Tablet and mobile layout. */
 @media (max-width: 760px) {
   .site-header-inner {
     padding: 22px 6%;
     gap: 12px;
+    flex-wrap: wrap;
   }
 
   .brand {
     font-size: 17px;
   }
 
+  /* Keep page navigation available on smaller screens. */
   .site-nav {
-    display: none;
-  }
-
+    display: flex;
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px 20px;
+    padding-top: 8px;
+  }  
   .hero {
     grid-template-columns: 1fr;
     padding: 62px 6% 55px;
