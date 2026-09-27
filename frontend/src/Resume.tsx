@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./Resume.css";
 import { backendUrl } from "./constants";
+import { useSession } from "./auth/session";
 
 type ResumeResponse = {
   id: number;
@@ -12,20 +13,15 @@ type ResumeResponse = {
 };
 
 const Resume = () => {
+  const session = useSession();
+
   const [resume, setResume] = useState<File | null>(null);
   const [resumes, setResumes] = useState<ResumeResponse[]>([]);
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingResumes, setIsLoadingResumes] = useState(true);
 
-  /*
-    TEMPORARY:
-    Replace this with the logged-in user's ID
-    once the authentication frontend is merged.
-  */
-  const userId = "TEMP_USER_ID";
-
-  const loadResumes = async () => {
+  const loadResumes = async (userId: string) => {
     try {
       setIsLoadingResumes(true);
 
@@ -53,8 +49,13 @@ const Resume = () => {
   };
 
   useEffect(() => {
-    loadResumes();
-  }, []);
+    if (session.status === "signed-in") {
+      loadResumes(session.user.userId);
+    } else if (session.status === "signed-out") {
+      setResumes([]);
+      setIsLoadingResumes(false);
+    }
+  }, [session]);
 
   const validateAndSetResume = (selectedFile: File) => {
     const validExtensions = [".pdf", ".docx"];
@@ -107,10 +108,17 @@ const Resume = () => {
   ) => {
     event.preventDefault();
 
+    if (session.status !== "signed-in") {
+      setMessage("Please sign in before uploading a resume.");
+      return;
+    }
+
     if (!resume) {
       setMessage("Please select a resume first.");
       return;
     }
+
+    const userId = session.user.userId;
 
     const formData = new FormData();
     formData.append("file", resume);
@@ -139,7 +147,7 @@ const Resume = () => {
       setMessage(`Successfully uploaded ${data.fileName}.`);
       setResume(null);
 
-      await loadResumes();
+      await loadResumes(userId);
     } catch (error) {
       console.error("Resume upload error:", error);
       setMessage("Could not connect to the backend.");
@@ -147,6 +155,42 @@ const Resume = () => {
       setIsUploading(false);
     }
   };
+
+  if (session.status === "loading") {
+    return (
+      <section className="resume">
+        <div className="resume-container">
+          <p className="resume-message">Loading account...</p>
+        </div>
+      </section>
+    );
+  }
+
+  if (session.status === "signed-out") {
+    return (
+      <section className="resume">
+        <div className="resume-container">
+          <h2 className="resume-title">Resume Management</h2>
+          <p className="resume-message">
+            Please sign in to manage your resumes.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (session.status === "unavailable") {
+    return (
+      <section className="resume">
+        <div className="resume-container">
+          <h2 className="resume-title">Resume Management</h2>
+          <p className="resume-message">
+            Account information is currently unavailable.
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="resume">
