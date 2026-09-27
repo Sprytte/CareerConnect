@@ -93,6 +93,20 @@ public class SecurityController {
         return auth0LoginService.getVoidResponseEntity(principal);
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<UserInfoResponseModel> getCurrentUser(@AuthenticationPrincipal OidcUser principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.ok(UserInfoResponseModel.builder()
+                .userId(principal.getSubject())
+                .email(principal.getEmail())
+                .name(principal.getClaimAsString("name"))
+                .picture(principal.getClaimAsString("picture"))
+                .build());
+    }
+
     @GetMapping("/user-info/{userId}")
     public ResponseEntity<UserInfoResponseModel> getUserInfo(/*@AuthenticationPrincipal OidcUser principal, */@PathVariable String userId) throws IOException, InterruptedException {
 //        if(principal == null)
