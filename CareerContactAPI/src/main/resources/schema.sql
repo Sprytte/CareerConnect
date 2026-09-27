@@ -5,3 +5,12 @@ CREATE TABLE IF NOT EXISTS users (
     profile_picture_url VARCHAR(255) NULL,
     email VARCHAR(255) UNIQUE NULL
 );
+CREATE TABLE IF NOT EXISTS resumes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id VARCHAR(64) NOT NULL,
+    original_file_name VARCHAR(255) NOT NULL,
+    stored_file_name VARCHAR(255) NOT NULL,
+    content_type VARCHAR(150) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    uploaded_at TIMESTAMP NOT NULL
+);
