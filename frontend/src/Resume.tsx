@@ -66,9 +66,10 @@ const Resume = () => {
       );
 
       if (!response.ok) {
-        setMessage("Resume upload failed.");
-        return;
-      }
+  const errorText = await response.text();
+  setMessage(errorText || "Resume upload failed.");
+  return;
+}
 
       const data: ResumeResponse = await response.json();
 
