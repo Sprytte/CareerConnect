@@ -122,6 +122,45 @@ None.
 
 `200 OK` with an empty response body. This endpoint does not return JSON.
 
+### Get the current session user
+
+**Request**
+
+```http
+GET /api/v1/cc/security/me
+```
+
+For a browser session, include credentials:
+
+```js
+const response = await fetch("http://localhost:8080/api/v1/cc/security/me", {
+  credentials: "include"
+});
+```
+
+**Purpose**
+
+Returns the user associated with the currently authenticated server session.
+The endpoint does not require a `userId` path parameter.
+
+**Body**
+
+None.
+
+**Returns**
+
+`200 OK` with a `UserInfoResponseModel` JSON object:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `userId` | string | Auth0 user identifier. |
+| `email` | string | User email address. |
+| `name` | string | User display name. |
+| `picture` | string | Profile picture URL. |
+| `user_metadata` | object | Not populated by this endpoint. |
+
+`401 Unauthorized` if there is no authenticated server session.
+
 ## User and account endpoints
 
 ### Get user information
@@ -318,11 +357,12 @@ CareerContactAPI/src/main/java/com/example/careercontactapi/security/service/Aut
 ```
 
 At present, `SecurityConfig` uses `.anyRequest().permitAll()`, and several
-controller-level authentication checks are commented out. Consequently, the
+controller-level authentication checks are commented out. Consequently, most
 custom API endpoints are currently reachable without an authenticated session
-unless another configuration or deployment layer restricts them. JWT validation
-is configured, but it is not the same as requiring authentication on every
-route.
+unless another configuration or deployment layer restricts them. The
+`GET /api/v1/cc/security/me` endpoint is an exception and explicitly requires
+an authenticated session. JWT validation is configured, but it is not the same
+as requiring authentication on every route.
 
 If Spring Security rejects a request as unauthenticated, its configured JSON
 error response has this field:
