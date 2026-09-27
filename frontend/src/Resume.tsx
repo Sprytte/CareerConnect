@@ -11,12 +11,28 @@ type ResumeResponse = {
   uploadedAt: string;
 };
 
-
-
 const Resume = () => {
   const [resume, setResume] = useState<File | null>(null);
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
+
+  const validateAndSetResume = (selectedFile: File) => {
+    const validExtensions = [".pdf", ".docx"];
+    const fileName = selectedFile.name.toLowerCase();
+
+    const isValidFile = validExtensions.some((extension) =>
+      fileName.endsWith(extension)
+    );
+
+    if (!isValidFile) {
+      setResume(null);
+      setMessage("Please select a PDF or DOCX file.");
+      return;
+    }
+
+    setResume(selectedFile);
+    setMessage("Resume selected and ready to upload.");
+  };
 
   const handleFileChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -24,8 +40,25 @@ const Resume = () => {
     const selectedFile = event.target.files?.[0];
 
     if (selectedFile) {
-      setResume(selectedFile);
-      setMessage("Resume selected and ready to upload.");
+      validateAndSetResume(selectedFile);
+    }
+  };
+
+  const handleDragOver = (
+    event: React.DragEvent<HTMLDivElement>
+  ) => {
+    event.preventDefault();
+  };
+
+  const handleDrop = (
+    event: React.DragEvent<HTMLDivElement>
+  ) => {
+    event.preventDefault();
+
+    const droppedFile = event.dataTransfer.files?.[0];
+
+    if (droppedFile) {
+      validateAndSetResume(droppedFile);
     }
   };
 
@@ -41,11 +74,8 @@ const Resume = () => {
 
     /*
       TEMPORARY:
-      Replace this with an EXISTING userId from the backend/database
-      while testing locally.
-
-      Once the authentication frontend is merged, this will come from
-      session.user.userId instead.
+      Replace this with the real logged-in userId
+      once the authentication frontend is merged.
     */
     const userId = "TEMP_USER_ID";
 
@@ -66,10 +96,10 @@ const Resume = () => {
       );
 
       if (!response.ok) {
-  const errorText = await response.text();
-  setMessage(errorText || "Resume upload failed.");
-  return;
-}
+        const errorText = await response.text();
+        setMessage(errorText || "Resume upload failed.");
+        return;
+      }
 
       const data: ResumeResponse = await response.json();
 
@@ -93,14 +123,18 @@ const Resume = () => {
         </p>
 
         <form onSubmit={handleUpload}>
-          <div className="resume-upload-box">
+          <div
+            className="resume-upload-box"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
             <label className="resume-upload-label">
-              Upload your resume
+              Drag and drop your resume here or select a file
             </label>
 
             <input
               type="file"
-              accept=".pdf"
+              accept=".pdf,.docx"
               onChange={handleFileChange}
             />
           </div>
