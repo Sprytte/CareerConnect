@@ -4,11 +4,11 @@ import { backendUrl } from '../constants'
 export const loginUrl = `${backendUrl}/oauth2/authorization/okta`
 export const logoutUrl = `${backendUrl}/api/v1/careercontact/logout`
 
-// This response shape is provisional until the backend contract is confirmed.
+// Frontend session data derived from the authenticated backend /me response.
+// The endpoint returns an Auth0 subject as userId and does not provide roles.
 export type SessionUser = {
   userId: string
   name: string
-  roles: string[]
 }
 
 export type SessionState =
@@ -19,22 +19,31 @@ export type SessionState =
 
 export const SessionContext = createContext<SessionState | undefined>(undefined)
 
-function isSessionUser(value: unknown): value is SessionUser {
-  if (typeof value !== 'object' || value === null) return false
+function parseSessionUser(value: unknown): SessionUser | null {
+  if (typeof value !== 'object' || value === null) return null
 
   const user = value as Record<string, unknown>
 
-  return typeof user.userId === 'string'
-    && typeof user.name === 'string'
-    && Array.isArray(user.roles)
-    && user.roles.every((role) => typeof role === 'string')
+  if (typeof user.userId !== 'string' || user.userId.trim() === '') {
+    return null
+  }
+
+  // OIDC profile claims may be absent. Identity comes from userId;
+  // the name is only a display label, with email or neutral text as fallback.
+  const name = typeof user.name === 'string' ? user.name.trim() : ''
+  const email = typeof user.email === 'string' ? user.email.trim() : ''
+
+  return {
+    userId: user.userId,
+    name: name || email || 'Account',
+  }
 }
 
 export async function checkSession(
   signal: AbortSignal,
 ): Promise<SessionState> {
-  // The backend must validate its session and return 401 when signed out.
-  // A readable "isAuthenticated" cookie is not proof of authentication.
+  // Ask the backend to validate authentication. A readable cookie alone
+  // does not establish that the user has an authenticated session.
   const response = await fetch(`${backendUrl}/api/v1/cc/security/me`, {
     credentials: 'include',
     headers: { Accept: 'application/json' },
@@ -45,9 +54,10 @@ export async function checkSession(
   if (!response.ok) return { status: 'unavailable' }
 
   const data: unknown = await response.json()
+  const user = parseSessionUser(data)
 
-  return isSessionUser(data)
-    ? { status: 'signed-in', user: data }
+  return user
+    ? { status: 'signed-in', user }
     : { status: 'unavailable' }
 }
 
