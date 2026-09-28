@@ -5,15 +5,16 @@ SOEN 341 · Concordia University · Fall 2026
 ## Team
 
 - **Section:** FK
-- **Team Number:** [Team number]
+- **Team Name:** [Z-coders]
 - **Repository:** https://github.com/Sprytte/CareerConnect
 
 | Name | GitHub Username | Initial Responsibilities |
 | --- | --- | --- |
-| Brendan Kelly | BrendanKelly84213 | [Assigned tasks] |
-| Elyes Jallouli | ElyesJallouli | [Assigned tasks] |
-| Arley Ndaribike | Arley100 | [Assigned tasks] |
-| Bilal Qadir | bilalqadir2010 | [Assigned tasks] |
+| Brendan Kelly | BrendanKelly84213 | [Auth0 management, 1.1, 1.2, 1.3] |
+| Elyes Jallouli | ElyesJallouli | [4.1, 4.3] |
+| Arley Ndaribike | Arley100 | [Frontend project creation, initial UI, 1.4, 2.1] |
+| Bilal Qadir | bilalqadir2010 | [4.1, 4.2] |
+| Emilie Parent | Sprytte | [Project creation, Backend project creation, Issues creation, 1.1] |
 
 Responsibilities will be updated as tasks are assigned during each sprint.
 
@@ -26,6 +27,8 @@ The platform will allow job seekers to create profiles, upload and manage resume
 Recruiters will be able to create and manage job postings and interact with applicants through the platform.
 
 The goal of CareerConnect is to centralize the job-search process and make it easier for users to manage their career development activities.
+
+The project board, with the backlog and a view by sprints, can be viewed here: https://github.com/users/Sprytte/projects/1/views/6
 
 ## Problem
 
@@ -75,9 +78,10 @@ Our technology choices are currently being discussed and may change as developme
 
 | Component | Technology |
 | --- | --- |
-| Frontend | [To be decided] |
-| Backend | [To be decided] |
-| Database | [To be decided] |
+| Frontend | [ ReactJS + TypeScript + Vite ] |
+| Backend | [ Java SpringBoot ] |
+| Database | [ SQLite ] |
+| Authentication | [ Auth0 ] |
 | Version Control | Git |
 | Repository Hosting | GitHub |
 | Task Tracking | GitHub Issues / GitHub Projects |
@@ -87,7 +91,7 @@ The application will initially be developed and run locally for testing and demo
 
 ## Proposed Features
 
-The planned CareerConnect features include:
+The planned CareerConnect features/user stories are:
 
 - User registration
 - User login and authentication
@@ -97,14 +101,17 @@ The planned CareerConnect features include:
 - Job search and filtering
 - Job application submission
 - Application status tracking
-- Application history dashboard
-- Notifications and reminders
 - Saved jobs and favourites
-- Generative AI functionality
+- Generative AI resume feedback
+- View and manage created job applications
+- Notifications for job application deadlines
+- Notifications on application status updates
+- Edit or withdraw application
+- Add notes when applying or saving to a job application
 
 ## Sprint 1 Basic Features
 
-For Sprint 1, the team will implement and demonstrate at least two basic features.
+For Sprint 1, the team will implement and demonstrate at least two basic features. All other user stories and their associated tasks have been created. 
 
 ### Feature 1 — User Registration and Login
 
@@ -114,7 +121,7 @@ Users will be able to create an account and log in to CareerConnect.
 
 > As a job seeker, I want to create an account so that I can access CareerConnect's features.
 
-### Feature 2 — [Resume Upload / User Profile Management]
+### Feature 2 — Resume Upload
 
 The second Sprint 1 feature will be selected and implemented by the team.
 
@@ -126,7 +133,7 @@ Sprint 1 requires a minimum of 15 user stories with associated tasks, priorities
 
 - **GitHub Issues:** https://github.com/Sprytte/CareerConnect/issues
 
-AI-generated user stories and team-generated user stories will be clearly identified separately according to the project requirements.
+AI-generated user stories have been properly reviewed and updated to match the project requirements.
 
 ## Team Workflow
 
@@ -147,7 +154,7 @@ A typical workflow will be:
 
 The `main` branch will contain the stable version of the project.
 
-Feature development will be completed using separate branches such as:
+Feature development will be completed using separate branches and named after their associated issue such as:
 
 - `feature/user-registration`
 - `feature/login`
@@ -158,11 +165,10 @@ Feature development will be completed using separate branches such as:
 
 A user story or task is considered ready when:
 
-- The requirements are clearly understood
-- Acceptance criteria are defined
-- Required tasks are identified
 - A team member has been assigned
-- Dependencies are known
+- The branch is up to date with main
+- Acceptance criteria have been met
+- A pull request has been created and approved
 
 ## Definition of Done
 
