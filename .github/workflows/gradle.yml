@@ -33,9 +33,6 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x ./CareerContactAPI/gradlew
 
-    - name: Make gradlew executable
-      run: chmod +x ./CareerContactAPI/gradlew
-
     - name: Build with Gradle Wrapper
       working-directory: ./CareerContactAPI
       run: ./gradlew build
