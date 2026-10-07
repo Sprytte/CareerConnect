@@ -1,9 +1,5 @@
 import { createContext, useContext } from 'react'
-
-// Public configuration only. Auth0 client secrets belong on the backend.
-const backendUrl = (
-  import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
-).replace(/\/$/, '')
+import { backendUrl } from '../constants'
 
 export const loginUrl = `${backendUrl}/oauth2/authorization/okta`
 export const logoutUrl = `${backendUrl}/api/v1/careercontact/logout`

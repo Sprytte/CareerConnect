@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import "./Resume.css";
-import { backendUrl } from "./constants";
-import { useSession } from "./auth/session";
+import "../styles/Resume.css";
+import { backendUrl } from "../constants";
+import { useSession } from "../auth/session";
 
 type ResumeResponse = {
   id: number;

@@ -1,6 +1,6 @@
 package com.example.careercontactapi.ResumeManagement.presentationlayer;
 
-import com.example.careercontactapi.ResumeManagement.businesslayer.ResumeFile;
+import com.example.careercontactapi.ResumeManagement.datalayer.ResumeFile;
 import com.example.careercontactapi.ResumeManagement.businesslayer.ResumeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;

@@ -1,5 +1,6 @@
 package com.example.careercontactapi.ResumeManagement.businesslayer;
 
+import com.example.careercontactapi.ResumeManagement.datalayer.ResumeFile;
 import org.springframework.web.multipart.MultipartFile;
 import com.example.careercontactapi.ResumeManagement.presentationlayer.ResumeResponseModel;
 import java.util.List;
