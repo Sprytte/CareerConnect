@@ -22,10 +22,9 @@ spring:
   config:
     activate:
       on-profile: default
-# TODO modify for mysql/sqlite
   datasource:
     driver-class-name: org.sqlite.JDBC
-    url: "jdbc:sqlite::memory:"
+    url: "jdbc:sqlite:db.sqlite3"
     username: username
     password: pwd
     hikari:

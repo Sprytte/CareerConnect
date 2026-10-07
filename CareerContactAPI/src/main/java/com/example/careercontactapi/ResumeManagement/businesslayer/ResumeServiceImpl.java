@@ -1,6 +1,7 @@
 package com.example.careercontactapi.ResumeManagement.businesslayer;
 
 import com.example.careercontactapi.ResumeManagement.datalayer.Resume;
+import com.example.careercontactapi.ResumeManagement.datalayer.ResumeFile;
 import com.example.careercontactapi.ResumeManagement.datalayer.ResumeRepository;
 import com.example.careercontactapi.ResumeManagement.presentationlayer.ResumeResponseModel;
 import org.springframework.beans.factory.annotation.Value;

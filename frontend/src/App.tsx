@@ -1,6 +1,6 @@
 import SiteHeader from './components/SiteHeader'
 import SiteFooter from './components/SiteFooter'
-import './App.css'
+import './styles/App.css'
 
 // Static welcome-page content; these cards do not fetch account or resume data.
 const features = [
