@@ -77,10 +77,22 @@
   border-radius: 11px;
   color: #16213b;
   font-size: 14px;
+  display: flex;
+  justify-content: space-between;
 }
 
 .resume-selected-file strong {
   color: #168b87;
+}
+
+.resume-icons {
+  display: flex;
+  gap: 7px;
+
+  button {
+    height: fit-content;
+    padding: 3px 4px;
+  }
 }
 
 .resume-upload-button {
@@ -115,6 +127,28 @@
   color: #168b87;
   font-size: 14px;
   font-weight: 600;
+}
+
+.icon-blue {
+  background-color: color-mix(in srgb, #006cf9 30%, transparent);
+  border: #006cf9 solid 1px;
+  /* padding: 15% 10%; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  filter: invert(44%) sepia(90%) saturate(6019%) hue-rotate(206deg) brightness(99%) contrast(101%);
+}
+
+.icon-red {
+  background-color: color-mix(in srgb, #ed3304 27%, transparent);
+  border: #ed3304 solid 1px;
+  /* padding: 4% 8%; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  filter: invert(44%) sepia(96%) saturate(6331%) hue-rotate(3deg) brightness(95%) contrast(100%);
 }
 
 @media (max-width: 600px) {
