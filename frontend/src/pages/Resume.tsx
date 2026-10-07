@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "../styles/Resume.css";
 import { backendUrl } from "../constants";
 import { useSession } from "../auth/session";
+import ResumeItem from "../components/ResumeItem";
 
 type ResumeResponse = {
   id: number;
@@ -248,23 +249,7 @@ const Resume = () => {
             </p>
           ) : (
             resumes.map((uploadedResume) => (
-              <div
-                className="resume-selected-file"
-                key={uploadedResume.id}
-              >
-                <strong>{uploadedResume.fileName}</strong>
-
-                <div>
-                  {(uploadedResume.sizeBytes / 1024).toFixed(1)} KB
-                </div>
-
-                <div>
-                  Uploaded:{" "}
-                  {new Date(
-                    uploadedResume.uploadedAt
-                  ).toLocaleDateString()}
-                </div>
-              </div>
+              <ResumeItem resume={uploadedResume} key={uploadedResume.id} />
             ))
           )}
         </div>
