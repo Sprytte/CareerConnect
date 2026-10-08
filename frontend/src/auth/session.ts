@@ -9,6 +9,7 @@ export const logoutUrl = `${backendUrl}/api/v1/careercontact/logout`
 export type SessionUser = {
   userId: string
   name: string
+  email?: string
 }
 
 export type SessionState =
@@ -18,6 +19,10 @@ export type SessionState =
   | { status: 'unavailable' }
 
 export const SessionContext = createContext<SessionState | undefined>(undefined)
+
+export const SessionUserUpdateContext = createContext<
+  ((user: SessionUser) => void) | undefined
+>(undefined)
 
 function parseSessionUser(value: unknown): SessionUser | null {
   if (typeof value !== 'object' || value === null) return null
@@ -36,12 +41,11 @@ function parseSessionUser(value: unknown): SessionUser | null {
   return {
     userId: user.userId,
     name: name || email || 'Account',
+    email: email || undefined,
   }
 }
 
-export async function checkSession(
-  signal: AbortSignal,
-): Promise<SessionState> {
+export async function checkSession(signal: AbortSignal): Promise<SessionState> {
   // Ask the backend to validate authentication. A readable cookie alone
   // does not establish that the user has an authenticated session.
   const response = await fetch(`${backendUrl}/api/v1/cc/security/me`, {
@@ -56,9 +60,7 @@ export async function checkSession(
   const data: unknown = await response.json()
   const user = parseSessionUser(data)
 
-  return user
-    ? { status: 'signed-in', user }
-    : { status: 'unavailable' }
+  return user ? { status: 'signed-in', user } : { status: 'unavailable' }
 }
 
 // Consumers share the provider's result instead of fetching independently.
@@ -70,4 +72,13 @@ export function useSession(): SessionState {
   }
 
   return session
+}
+
+// Fresh profile data can update the greeting without trusting form input or
+// re-reading stale OIDC claims from the current /me endpoint.
+export function useUpdateSessionUser(): (user: SessionUser) => void {
+  const update = useContext(SessionUserUpdateContext)
+  if (!update)
+    throw new Error('useUpdateSessionUser must be used within SessionProvider')
+  return update
 }
