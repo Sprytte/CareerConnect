@@ -1,10 +1,10 @@
 # CareerConnect frontend
 
-The welcome page uses React, TypeScript, and Vite with the project's existing dependencies.
+React, TypeScript, Vite, React Router, and the project's existing CSS styles.
 
 ## Local setup
 
-Install Node.js 22.12+ and npm (the locked Vite version also supports Node.js 20.19+ within version 20). From the repository root in PowerShell:
+From the repository root in PowerShell:
 
 ```powershell
 cd frontend
@@ -12,72 +12,86 @@ npm ci
 npm run dev
 ```
 
-Open the local URL printed by Vite. Stop the server with Ctrl+C.
+Open `http://localhost:3000`. Run the Spring Boot backend on port 8080 in a
+second terminal. Auth0 configuration stays on the backend. To override the
+backend origin, set `VITE_BACKEND_URL` in an untracked `frontend/.env.local`
+file and restart Vite.
 
-## Checks and production preview
+## Routes
 
-From the repository root:
+| Route | Purpose |
+| --- | --- |
+| `/` | Welcome page and sign-in navigation. |
+| `/account` | Signed-in profile editor; name updates and account-update dependency handling. |
+| `/account/resume` | Existing resume component. |
+
+The shared header links to `/account` after the backend verifies the session.
+The account page links to the existing resume page.
+
+## Authentication and profile data
+
+`SessionProvider` calls `GET /api/v1/cc/security/me` with
+`credentials: 'include'`. This endpoint is implemented in `SecurityController`;
+it returns `userId`, `name`, `email`, and `picture`, or 401 when signed out.
+It does not return roles. The backend owns the Auth0 OAuth2 login flow.
+
+After verifying the session, `/account` loads the latest Auth0 profile using
+`GET /api/v1/cc/security/user-info/{userId}`. The user ID comes from `/me`,
+not from editable input, a URL query, or a readable authentication cookie.
+The path identifier is URL-encoded. Fresh profile data updates the shared
+header greeting while the frontend is open.
+
+`PATCH /api/v1/cc/security/user-info/{userId}` currently forwards **only name**
+to Auth0.
+The editor sends only `{ "name": "Updated Name" }` and checks the returned
+identity, name, and email before displaying success. Empty or invalid success
+responses, ignored updates, HTTP failures, and network failures show errors.
+Cancel restores the last server-confirmed values. Repeated submissions are
+blocked while a request is pending.
+
+## Issue #32 dependencies
+
+Live testing with Google sign-in confirmed that Auth0 rejects name changes with
+HTTP 400 and `operation_not_supported` under the current connection sync policy.
+The backend maps this error into empty profile fields and returns 201, which the
+frontend correctly rejects. Successful name persistence needs the backend and
+connection-policy fix described in `docs/Sprint2-Issue32-Handoff.md`.
+
+The requested email and password changes are **not implemented by the supplied
+backend**. A changed email is rejected before sending a PATCH, preventing a
+partial name save. The password form checks required fields and matching
+confirmation, but transmits no password and does not claim to update it.
+These limitations are explicit in the UI. They must be resolved before #32
+can be considered complete. See `docs/Sprint2-Issue32-Handoff.md`.
+
+The patch also corrects `SecurityConfig` to allow PATCH as an HTTP method,
+rather than adding a header named PATCH. Restart the backend after applying it.
+Existing ownership checks on the profile endpoints and stale `/me` claims
+remain backend handoff items; a frontend session gate is not server authorization.
+
+## Checks
 
 ```powershell
-cd frontend
-npm run lint
 npm run build
-npm run preview
+npm run lint
 ```
 
-The build checks TypeScript and produces the production assets. Open the URL printed by the preview server. There is currently no automated test script in `package.json`.
+The production build and changed-file lint checks passed for this patch.
+Project-wide lint still reports the pre-existing
+`react-hooks/set-state-in-effect` error in `src/components/Resume.tsx`.
+It was also reproduced against the original uploaded file.
 
-Check desktop and mobile layouts, navigation links, keyboard focus, and reduced-motion behavior.
+Twenty-four browser scenarios passed with intercepted, synthetic account API
+responses. The change package includes the harness and results. This verifies
+frontend behavior; it does not establish that live Auth0 updates work. Local
+Windows checks subsequently confirmed frontend build and changed-file lint, Java
+compilation with JDK 17, backend startup, and authenticated profile loading. Name
+persistence remains blocked as described above. Backend tests and live
+email/password integration remain pending.
 
-## Sign-in integration
+## Files
 
-The header opens the backend's OAuth2 login route in the browser. The backend
-handles Auth0 and redirects back to the frontend. No Auth0 client secret or
-React Auth0 SDK belongs in this frontend. By default, the backend runs at
-`http://localhost:8080`. To use another origin, set `VITE_BACKEND_URL` in a
-local, untracked `.env.local` file in `frontend/` and restart Vite:
-
-```text
-VITE_BACKEND_URL=http://localhost:8080
-```
-
-The header also requests `GET /api/v1/cc/security/me` with browser credentials
-after loading. **The backend does not implement this endpoint yet.** Agree on
-and implement a server-validated current-user response before expecting the
-header to display a signed-in account. The proposed response is:
-
-```json
-{"userId":"auth0|example","name":"Example User","roles":["USER"]}
-```
-
-Return 401 when signed out. The backend must derive user ID and roles from the
-authenticated session, not a caller-supplied user ID or a readable cookie.
-Cross-origin calls from `http://localhost:3000` must allow credentials. The
-header reports account status unavailable while this endpoint is absent or
-unreachable. The sign-out form posts to the backend's documented logout route;
-confirm that the backend redirects to the frontend after logout.
-
-Other API calls that need the session should use `credentials: 'include'`.
-Role-based pages also need server-enforced authorization; hiding a link in React
-does not protect backend routes.
-Session state is loaded by `src/auth/SessionProvider.tsx`, mounted in
-`src/main.tsx`. Components read that shared state through `useSession()`
-from `src/auth/session.ts`.
-
-The current-user endpoint and response shape remain provisional until
-the backend implementation is available. Long display names are visually
-truncated in the header; the choice of display-name field is still pending.
-
-## Current scope
-
-- A responsive welcome page with reusable `SiteHeader` and `SiteFooter` components.
-- In-page links to Features, How it works, and the top of the page.
-- Static feature descriptions and a decorative account/resume preview. The preview is hidden from assistive technology and does not display account data or accept uploads.
-- Sign-in opens the backend's OAuth2 route; the account display and sign-out
-  depend on the backend contracts described above.
-
-The welcome page still runs without a backend, but account status cannot load
-without one. Resume management and protected role-based pages are separate
-integrations.
-
-`src/App.tsx` composes the page, `src/App.css` contains component and responsive styles, and `src/index.css` holds shared document defaults. Header and footer markup lives in `src/components`.
+`src/components/Account.tsx` owns the account page and form states.
+`src/profile/profileApi.ts` owns profile requests and response checks.
+`src/styles/Account.css` contains account layout and responsive styles.
+`src/auth/session.ts` and `SessionProvider.tsx` share authenticated user state.
