@@ -1,18 +1,28 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
-import { checkSession, SessionContext } from './session'
-import type { SessionState } from './session'
+import {
+  checkSession,
+  SessionContext,
+  SessionUserUpdateContext,
+} from './session'
+import type { SessionState, SessionUser } from './session'
 
 type SessionProviderProps = {
   children: ReactNode
 }
 
-export default function SessionProvider({
-  children,
-}: SessionProviderProps) {
+export default function SessionProvider({ children }: SessionProviderProps) {
   const [session, setSession] = useState<SessionState>({
     status: 'loading',
   })
+
+  const updateSessionUser = useCallback((user: SessionUser) => {
+    setSession((current) =>
+      current.status === 'signed-in' && current.user.userId === user.userId
+        ? { status: 'signed-in', user }
+        : current,
+    )
+  }, [])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -35,7 +45,9 @@ export default function SessionProvider({
 
   return (
     <SessionContext.Provider value={session}>
-      {children}
+      <SessionUserUpdateContext.Provider value={updateSessionUser}>
+        {children}
+      </SessionUserUpdateContext.Provider>
     </SessionContext.Provider>
   )
 }
