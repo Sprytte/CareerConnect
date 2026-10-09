@@ -107,9 +107,7 @@ export default function CreatedJobPostings() {
         {jobPostings.length === 0 ? (
           <section className="job-postings-empty">
             <h2>No job postings yet</h2>
-            <p>
-              Jobs you create will appear here.
-            </p>
+            <p>Jobs you create will appear here.</p>
           </section>
         ) : (
           <section className="job-postings-grid">
@@ -143,10 +141,6 @@ export default function CreatedJobPostings() {
                   <span>
                     Posted{" "}
                     {new Date(job.createdAt).toLocaleDateString()}
-                  </span>
-
-                  <span className="job-posting-view">
-                    Created posting
                   </span>
                 </div>
               </article>
