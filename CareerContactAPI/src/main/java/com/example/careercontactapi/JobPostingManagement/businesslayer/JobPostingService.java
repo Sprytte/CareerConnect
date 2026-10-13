@@ -21,4 +21,11 @@ public interface JobPostingService {
     );
 
     void deleteJobPosting(Integer jobId);
+
+    List<JobPostingResponseModel> getJobPostingsByUserId(String userId);
+
+    JobPostingResponseModel getJobPostingByIdAndUserId(
+            Integer jobId,
+            String userId
+    );
 }

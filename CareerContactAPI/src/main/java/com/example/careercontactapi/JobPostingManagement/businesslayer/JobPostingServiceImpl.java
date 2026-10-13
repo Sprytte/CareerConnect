@@ -96,6 +96,37 @@ public class JobPostingServiceImpl implements JobPostingService {
         jobPostingRepository.delete(jobPosting);
     }
 
+    @Override
+    public List<JobPostingResponseModel> getJobPostingsByUserId(String userId) {
+        return jobPostingRepository
+                .findAllByUserIdOrderByDeadlineDesc(userId)
+                .stream()
+                .map(this::toResponseModel)
+                .toList();
+    }
+
+    @Override
+    public JobPostingResponseModel getJobPostingByIdAndUserId(
+            Integer jobId,
+            String userId
+    ) {
+        JobPosting jobPosting = jobPostingRepository
+                .findById(jobId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Job posting with id " + jobId + " not found"
+                ));
+
+        if (!jobPosting.getUserId().equals(userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Job posting with id " + jobId + " not found for this user"
+            );
+        }
+
+        return toResponseModel(jobPosting);
+    }
+
     private JobPostingResponseModel toResponseModel(JobPosting jobPosting) {
         return new JobPostingResponseModel(
                 jobPosting.getId(),
