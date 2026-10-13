@@ -13,6 +13,7 @@ import java.util.List;
 
 @Service
 public class JobPostingServiceImpl implements JobPostingService {
+
     private final JobPostingRepository jobPostingRepository;
 
     public JobPostingServiceImpl(JobPostingRepository jobPostingRepository) {
@@ -53,10 +54,46 @@ public class JobPostingServiceImpl implements JobPostingService {
                 .findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
-                        "Job posting with id" + jobId + " not found"
+                        "Job posting with id " + jobId + " not found"
                 ));
 
         return toResponseModel(jobPosting);
+    }
+
+    @Override
+    public JobPostingResponseModel updateJobPosting(
+            Integer jobId,
+            JobPostingRequestModel requestModel
+    ) {
+        JobPosting jobPosting = jobPostingRepository
+                .findById(jobId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Job posting with id " + jobId + " not found"
+                ));
+
+        jobPosting.setUserId(requestModel.getUserId());
+        jobPosting.setJobName(requestModel.getJobName());
+        jobPosting.setCompany(requestModel.getCompany());
+        jobPosting.setDescription(requestModel.getDescription());
+        jobPosting.setLocation(requestModel.getLocation());
+        jobPosting.setCategory(requestModel.getCategory());
+        jobPosting.setSalary(requestModel.getSalary());
+        jobPosting.setDeadline(requestModel.getDeadline());
+
+        return toResponseModel(jobPostingRepository.save(jobPosting));
+    }
+
+    @Override
+    public void deleteJobPosting(Integer jobId) {
+        JobPosting jobPosting = jobPostingRepository
+                .findById(jobId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Job posting with id " + jobId + " not found"
+                ));
+
+        jobPostingRepository.delete(jobPosting);
     }
 
     private JobPostingResponseModel toResponseModel(JobPosting jobPosting) {

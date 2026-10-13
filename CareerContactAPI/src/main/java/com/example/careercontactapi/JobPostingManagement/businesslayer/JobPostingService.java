@@ -6,7 +6,20 @@ import com.example.careercontactapi.JobPostingManagement.presentationlayer.JobPo
 import java.util.List;
 
 public interface JobPostingService {
-    JobPostingResponseModel createJobPosting(JobPostingRequestModel jobPostingRequestModel, String userId);
+
+    JobPostingResponseModel createJobPosting(
+            JobPostingRequestModel jobPostingRequestModel,
+            String userId
+    );
+
     List<JobPostingResponseModel> getJobPostings();
+
     JobPostingResponseModel getJobPostingById(Integer jobId);
+
+    JobPostingResponseModel updateJobPosting(
+            Integer jobId,
+            JobPostingRequestModel jobPostingRequestModel
+    );
+
+    void deleteJobPosting(Integer jobId);
 }
