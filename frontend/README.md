@@ -59,8 +59,9 @@ connection-policy fix described in `docs/Sprint2-Issue32-Handoff.md`.
 
 The requested email and password changes are **not implemented by the supplied
 backend**. A changed email is rejected before sending a PATCH, preventing a
-partial name save. The password form checks required fields and matching
-confirmation, but transmits no password and does not claim to update it.
+partial name save. The password form checks required fields, the 15-character
+minimum requested in the PR review, and matching confirmation. It transmits no
+password and does not claim to update it.
 These limitations are explicit in the UI. They must be resolved before #32
 can be considered complete. See `docs/Sprint2-Issue32-Handoff.md`.
 
@@ -81,7 +82,7 @@ Project-wide lint still reports the pre-existing
 `react-hooks/set-state-in-effect` error in `src/components/Resume.tsx`.
 It was also reproduced against the original uploaded file.
 
-Twenty-four browser scenarios passed with intercepted, synthetic account API
+Twenty-six browser scenarios passed after the review update with intercepted, synthetic account API
 responses. The change package includes the harness and results. This verifies
 frontend behavior; it does not establish that live Auth0 updates work. Local
 Windows checks subsequently confirmed frontend build and changed-file lint, Java
