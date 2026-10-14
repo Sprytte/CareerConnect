@@ -202,7 +202,13 @@ Content-Type: application/json
 
 **Purpose**
 
-Updates the Auth0 profile associated with `userId`.
+The current implementation forwards only **name** to Auth0 for the specified
+`userId`. It does not forward email or implement password changes.
+
+Local Google sign-in testing on October 8 confirmed that Auth0 rejects name
+updates with HTTP 400 and `operation_not_supported` under the current connection
+sync policy. The local API maps that error into empty profile fields and still
+returns 201. Successful name persistence remains unverified until this is fixed.
 
 **Body**
 
@@ -212,13 +218,16 @@ A `UserRequestModel` JSON object:
 | --- | --- | --- |
 | `userId` | string | User identifier. |
 | `name` | string | Updated display name. |
-| `email` | string | User email address. |
-| `pictureUrl` | string | Profile picture URL. |
+| `email` | string | Accepted by the request model but ignored by the current update service. |
+| `pictureUrl` | string | Accepted by the request model but ignored by the current update service. |
 
 **Returns**
 
 `201 Created` with the updated `UserInfoResponseModel` JSON object described
-above.
+above. The current service can also return null or incomplete profile data
+after an Auth0 failure while the controller still returns 201. Consumers must
+not treat the status code alone as confirmation of a saved update. No password
+field or user-password update endpoint is implemented in this snapshot.
 
 ### Delete a user account
 

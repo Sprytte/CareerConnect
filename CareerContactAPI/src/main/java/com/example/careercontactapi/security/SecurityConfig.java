@@ -144,7 +144,7 @@ public class SecurityConfig {
         config.addAllowedMethod("GET");
         config.addAllowedMethod("PUT");
         config.addAllowedMethod("POST");
-        config.addAllowedHeader("PATCH");
+        config.addAllowedMethod("PATCH");
         config.addAllowedMethod("DELETE");
         config.addAllowedHeader("*");
         config.addAllowedHeader("Authorization");
