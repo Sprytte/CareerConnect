@@ -14,6 +14,8 @@ import type { AccountProfile } from '../profile/profileApi'
 import '../styles/App.css'
 import '../styles/Account.css'
 
+const MIN_PASSWORD_LENGTH = 15
+
 type Feedback = {
   kind: 'success' | 'error'
   message: string
@@ -246,6 +248,8 @@ function PasswordEditor() {
     event.preventDefault()
     const validation: { password?: string; confirmation?: string } = {}
     if (!password) validation.password = 'Enter a new password.'
+    else if (password.length < MIN_PASSWORD_LENGTH)
+      validation.password = `Use at least ${MIN_PASSWORD_LENGTH} characters.`
     if (!confirmation) validation.confirmation = 'Confirm your new password.'
     else if (password !== confirmation)
       validation.confirmation = 'The passwords do not match.'
@@ -287,8 +291,8 @@ function PasswordEditor() {
         <span className="account-badge">Coming soon</span>
       </div>
       <p className="account-availability" id="password-availability">
-        Password updates are not available yet. You can check that the two
-        fields match.
+        Password updates are not available yet. You can check your password
+        length and confirmation.
       </p>
       <form
         onSubmit={handleSubmit}
@@ -304,6 +308,7 @@ function PasswordEditor() {
               name="newPassword"
               type={showPassword ? 'text' : 'password'}
               autoComplete="new-password"
+              minLength={MIN_PASSWORD_LENGTH}
               required
               value={password}
               onChange={(event) => {
@@ -316,10 +321,11 @@ function PasswordEditor() {
                 }))
               }}
               aria-invalid={Boolean(errors.password)}
-              aria-describedby={
-                errors.password ? 'account-password-error' : undefined
-              }
+              aria-describedby={`account-password-hint${errors.password ? ' account-password-error' : ''}`}
             />
+            <p className="account-field-hint" id="account-password-hint">
+              Minimum {MIN_PASSWORD_LENGTH} characters.
+            </p>
             {errors.password && (
               <p className="account-field-error" id="account-password-error">
                 {errors.password}

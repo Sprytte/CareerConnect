@@ -29,7 +29,7 @@ with Brendan before the frontend can integrate those updates.
 | Editing page or edit mode on `/account` | New `/account` route and signed-in header link; page and live profile loading checked locally. | Complete remaining manual checks and review. |
 | Change name | Loads latest profile, validates name, sends name-only PATCH, checks server response, refreshes greeting after confirmed success. | Resolve the confirmed Google/Auth0 connection blocker and backend error handling, then verify persistence and permissions. |
 | Change email | Editable field with required/email-format validation. Changed email is blocked before sending a request. | Backend currently ignores email; add the agreed update behavior. |
-| Change password and confirm it | New-password and confirmation fields, mismatch/required errors, visibility control, and clear action. | No password-update backend contract exists. The button checks the fields; it does not save. |
+| Change password and confirm it | New-password and confirmation fields, the review-requested 15-character minimum, mismatch/required errors, visibility control, and clear action. | No password-update backend contract exists. The button checks the fields; it does not save. |
 | Error management | Session unavailable/signed out, load retry, validation, 401, 403, network/HTTP failures, invalid responses, and unconfirmed updates. | Live integration with the backend's agreed error responses. |
 
 ## How the frontend works
@@ -51,10 +51,11 @@ with Brendan before the frontend can integrate those updates.
 6. Success requires a usable profile response for the same user, containing the
    requested name and unchanged email. A 201 status by itself is insufficient.
    Verified values update the form and shared session greeting.
-7. The password form validates required fields and equality without inventing
-   an Auth0 password policy. It sends no password, stores none in local or
-   session storage, clears the fields after checking a matching pair, and states
-   that the password was not changed.
+7. The password form validates required fields, the 15-character minimum
+   requested in the October 14 PR review, and matching confirmation. Additional
+   backend/provider policy remains an integration item. It sends no password,
+   stores none in local or session storage, clears the fields after a valid
+   check, and states that the password was not changed.
 8. Profile loads and saves use AbortController cleanup so obsolete requests do
    not update an unmounted editor.
 
@@ -81,7 +82,7 @@ or authentication configuration has otherwise been changed.
 | Source | Finding | Needed decision or correction |
 | --- | --- | --- |
 | `Auth0ManagementService.getPatchFormatterBodyUser` | Builds a body containing only name. `UserRequestModel.email` is not forwarded. | Brendan implements the agreed email update behavior; agree on Auth0 verification/connection behavior. |
-| `UserRequestModel` and user-info PATCH | No user password field or password-update contract. | Brendan defines password changes and the behavior for provider-managed accounts. |
+| `UserRequestModel` and user-info PATCH | No user password field or password-update contract. | Brendan defines password changes, enforces the agreed minimum on the server, and defines behavior for provider-managed accounts. |
 | `SecurityController` user-info GET/PATCH | Authentication/ownership checks are commented out. | Authenticate requests and derive or verify the target user against the server principal. The UI gate cannot enforce this. |
 | `Auth0ManagementService.updateUserInfo` | Does not check Auth0's HTTP status before mapping the response; catches failures and can return null. Live testing confirmed an Auth0 400 was mapped into empty profile fields and returned as 201. | Return clear failure statuses and a trustworthy success response. |
 | Google/Auth0 connection policy | Live name updates return 400 with `operation_not_supported` while profile attributes sync at each login. | Review the connection policy with the tenant owner and agree on editable profile behavior; do not change shared settings without team coordination. |
@@ -121,7 +122,7 @@ the API contract and live verification remain pending.
 | ESLint on all changed TypeScript/TSX files | Passed in package checks and Arley's Windows checkout. |
 | Project-wide `npm run lint` | Failed on the existing Resume.tsx set-state-in-effect error. |
 | Original Resume.tsx checked using the same ESLint configuration | Same failure reproduced; the component was not changed. |
-| Synthetic browser integration suite | 24/24 scenarios passed; results and harness included in the change package. |
+| Synthetic browser integration suite | 26/26 scenarios passed after the review update; results and harness included in the follow-up package. |
 | Desktop and mobile visual inspection | Completed; no clipped inputs or horizontal overflow at 1440, 760, 375, and 320-pixel widths in tested fixtures. |
 | Java compilation | Passed locally using Gradle 8.4 and JDK 17. |
 | Backend startup | Passed locally on port 8080. |
@@ -135,7 +136,7 @@ Browser scenarios cover signed-out/unavailable sessions, fresh profile loading,
 validation and focus, cancel, request payload and cookie behavior, repeated
 submission, unsupported email changes, HTTP/network failures, invalid 201
 responses, wrong returned identity, ignored updates, expiry/permission errors,
-retry, password confirmation, navigation, mobile/long-name layouts, and text
+retry, password confirmation and 14/15-character boundaries, navigation, mobile/long-name layouts, and text
 rendering. Preview email `arley@example.test` is synthetic fixture data.
 
 ## Local verification checklist
@@ -170,7 +171,7 @@ Description:
 >
 > Refs #32. Keep this PR in draft and the issue open while integration is pending.
 >
-> Validation: frontend build and changed-file lint pass; 24 fixture-based browser
+> Validation: frontend build and changed-file lint pass; 26 fixture-based browser
 > scenarios pass. Java compilation, backend startup, and live profile loading
 > passed locally. Full lint has the existing Resume.tsx error. Successful live
 > name persistence and email/password integration remain pending.
