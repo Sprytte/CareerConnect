@@ -72,7 +72,6 @@ public class JobPostingServiceImpl implements JobPostingService {
                         "Job posting with id " + jobId + " not found"
                 ));
 
-        jobPosting.setUserId(requestModel.getUserId());
         jobPosting.setJobName(requestModel.getJobName());
         jobPosting.setCompany(requestModel.getCompany());
         jobPosting.setDescription(requestModel.getDescription());
