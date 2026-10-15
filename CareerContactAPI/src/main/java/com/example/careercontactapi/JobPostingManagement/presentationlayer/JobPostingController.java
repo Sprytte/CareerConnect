@@ -18,8 +18,12 @@ public class JobPostingController {
     private final JobPostingService jobPostingService;
 
     @PostMapping("")
-    public ResponseEntity<JobPostingResponseModel> createJobPosting(@RequestBody JobPostingRequestModel requestModel) {
-        return ResponseEntity.status(201).body(jobPostingService.createJobPosting(requestModel));
+    public ResponseEntity<JobPostingResponseModel> createJobPosting(
+            @RequestBody JobPostingRequestModel requestModel
+    ) {
+        return ResponseEntity
+                .status(201)
+                .body(jobPostingService.createJobPosting(requestModel));
     }
 
     @GetMapping("")
@@ -28,8 +32,30 @@ public class JobPostingController {
     }
 
     @GetMapping("/{jobId}")
-    public ResponseEntity<?> getJobPostingsById(@PathVariable Integer jobId) {
-        return ResponseEntity.ok(jobPostingService.getJobPostingById(jobId));
+    public ResponseEntity<JobPostingResponseModel> getJobPostingsById(
+            @PathVariable Integer jobId
+    ) {
+        return ResponseEntity.ok(
+                jobPostingService.getJobPostingById(jobId)
+        );
     }
 
+    @PutMapping("/{jobId}")
+    public ResponseEntity<JobPostingResponseModel> updateJobPosting(
+            @PathVariable Integer jobId,
+            @RequestBody JobPostingRequestModel requestModel
+    ) {
+        return ResponseEntity.ok(
+                jobPostingService.updateJobPosting(jobId, requestModel)
+        );
+    }
+
+    @DeleteMapping("/{jobId}")
+    public ResponseEntity<Void> deleteJobPosting(
+            @PathVariable Integer jobId
+    ) {
+        jobPostingService.deleteJobPosting(jobId);
+
+        return ResponseEntity.noContent().build();
+    }
 }
