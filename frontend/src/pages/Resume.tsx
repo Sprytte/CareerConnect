@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import "../styles/Resume.css";
 import { backendUrl } from "../constants";
 import { useSession } from "../auth/session";
-import ResumeItem from "../components/ResumeItem";
+import Delete from "../assets/trash-icon.svg";
+import Edit from "../assets/edit-icon.svg";
+// import ResumeItem from "../components/ResumeItem";
 
 type ResumeResponse = {
   id: number;
@@ -21,6 +23,7 @@ const Resume = () => {
   const [message, setMessage] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingResumes, setIsLoadingResumes] = useState(true);
+  const [isEditing, setIsEditing] = useState(-1); // ID of resume being edited. -1 when none
 
   const loadResumes = async (userId: string) => {
     try {
@@ -48,6 +51,54 @@ const Resume = () => {
       setIsLoadingResumes(false);
     }
   };
+
+  const updateResume = async (resumeId: number) => {
+    setIsEditing(resumeId)
+    // try {
+    //   const response = await fetch(
+    //     `${backendUrl}/api/v1/resumes/${resumeId}`,
+    //     {
+    //       method: "DELETE",
+    //       credentials: "include",
+    //     }
+    //   );
+
+    //   if (response.ok && session.status === 'signed-in') {
+    //     setMessage('');
+    //     await loadResumes(session.user.userId);
+    //   }
+    // } catch (error) {
+    //   console.error("Resume loading error:", error);
+    //   setMessage("Could not connect to the backend.");
+    // } finally {
+    //   setIsLoadingResumes(false);
+    // }
+  }
+
+  const deleteResume = async (resumeId: number) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete this resume?");
+    if(!confirmDelete)
+      return;
+    try {
+      const response = await fetch(
+        `${backendUrl}/api/v1/resumes/${resumeId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (response.ok && session.status === 'signed-in') {
+        setMessage('');
+        await loadResumes(session.user.userId);
+      }
+    } catch (error) {
+      console.error("Resume loading error:", error);
+      setMessage("Could not connect to the backend.");
+    } finally {
+      setIsLoadingResumes(false);
+    }
+  }
 
   useEffect(() => {
     if (session.status === "signed-in") {
@@ -103,6 +154,7 @@ const Resume = () => {
       validateAndSetResume(droppedFile);
     }
   };
+
 
   const handleUpload = async (
     event: React.FormEvent<HTMLFormElement>
@@ -249,7 +301,40 @@ const Resume = () => {
             </p>
           ) : (
             resumes.map((uploadedResume) => (
-              <ResumeItem resume={uploadedResume} key={uploadedResume.id} />
+              // <ResumeItem resume={uploadedResume} key={uploadedResume.id} />
+              <div className="resume-selected-file" key={uploadedResume.id}>
+                <div>
+                  {isEditing === uploadedResume.id?
+                    <input id="editResumeInput"></input>
+                    : <></>
+                  }
+                  <strong>{uploadedResume.fileName}</strong>
+
+                  <div>
+                    {(uploadedResume.sizeBytes / 1024).toFixed(1)} KB
+                  </div>
+
+                  <div>
+                    Uploaded:{" "}
+                    {new Date(
+                      uploadedResume.uploadedAt
+                    ).toLocaleDateString()}
+                  </div>
+                </div>
+                <div className="resume-icons">
+                  {/* on click -> isEditMode(T)
+                  icon changes color
+                  input with OG filename
+                  new icon next to filename (click to save)
+                  onSave -> updateResume() */}
+                  <button className="icon-blue" onClick={() => updateResume(uploadedResume.id)}>
+                    <img src={ Edit } width={18} height={17}/>
+                  </button>
+                  <button className="icon-red" onClick={() => deleteResume(uploadedResume.id)}>
+                    <img src={ Delete } width={18}/>
+                  </button>
+                </div>
+              </div>
             ))
           )}
         </div>
