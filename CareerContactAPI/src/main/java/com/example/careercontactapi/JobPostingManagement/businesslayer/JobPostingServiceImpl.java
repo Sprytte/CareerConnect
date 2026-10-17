@@ -20,11 +20,11 @@ public class JobPostingServiceImpl implements JobPostingService {
     }
 
     @Override
-    public JobPostingResponseModel createJobPosting(JobPostingRequestModel requestModel) {
-        // Should check if user exists beforehand
+    public JobPostingResponseModel createJobPosting(JobPostingRequestModel requestModel, String userId) {
+        // TODO Should check if user exists beforehand
 
         JobPosting jobPosting = JobPosting.builder()
-                .userId(requestModel.getUserId())
+                .userId(userId)
                 .jobName(requestModel.getJobName())
                 .company(requestModel.getCompany())
                 .description(requestModel.getDescription())
