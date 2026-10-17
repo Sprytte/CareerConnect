@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './styles/index.css'
 import App from './App.tsx'
-import Resume from './components/Resume.tsx'
+import Resume from './pages/Resume.tsx'
 import SessionProvider from './auth/SessionProvider'
 
 createRoot(document.getElementById('root')!).render(

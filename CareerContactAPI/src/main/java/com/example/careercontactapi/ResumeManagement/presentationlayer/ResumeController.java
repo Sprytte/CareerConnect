@@ -4,10 +4,9 @@ import com.example.careercontactapi.ResumeManagement.datalayer.ResumeFile;
 import com.example.careercontactapi.ResumeManagement.businesslayer.ResumeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -59,12 +58,25 @@ public class ResumeController {
                 .body(resumeFile.resource());
     }
 
+    @PutMapping("/{resumeId}")
+    public ResponseEntity<ResumeResponseModel> updateResume(@PathVariable Integer resumeId,
+                                                            @RequestBody String filename,
+                                                            @AuthenticationPrincipal OidcUser principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.status(200).body(resumeService.updateResume(resumeId, filename, principal.getSubject()));
+    }
+
     @DeleteMapping("/{resumeId}")
-    public ResponseEntity<Void> deleteResume(
-            @PathVariable Integer resumeId) {
+    public ResponseEntity<Void> deleteResume(@PathVariable Integer resumeId,
+                                             @AuthenticationPrincipal OidcUser principal) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-        resumeService.deleteResume(resumeId);
-
+        resumeService.deleteResume(resumeId, principal.getSubject());
         return ResponseEntity.noContent().build();
     }
 }
