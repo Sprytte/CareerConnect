@@ -111,12 +111,20 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public void deleteResume(Integer resumeId) {
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Resume not found"
-                ));
+    public ResumeResponseModel updateResume(Integer resumeId, String newFilename, String userId) {
+        Resume originalResume = resumeRepository.findByIdAndUserId(resumeId, userId);
+        if (originalResume == null)
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume not found");
+
+        originalResume.setOriginalFileName(newFilename);
+        return toResponseModel(resumeRepository.save(originalResume));
+    }
+
+    @Override
+    public void deleteResume(Integer resumeId, String userId) {
+        Resume resume = resumeRepository.findByIdAndUserId(resumeId, userId);
+        if (resume == null)
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume not found");
 
         Path filePath = Paths.get(storagePath, resume.getStoredFileName());
 

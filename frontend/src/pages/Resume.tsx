@@ -4,6 +4,8 @@ import { backendUrl } from "../constants";
 import { useSession } from "../auth/session";
 import Delete from "../assets/trash-icon.svg";
 import Edit from "../assets/edit-icon.svg";
+import Ok from "../assets/ok-icon.svg";
+import Cancel from "../assets/cancel-icon.svg";
 // import ResumeItem from "../components/ResumeItem";
 
 type ResumeResponse = {
@@ -24,6 +26,7 @@ const Resume = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isLoadingResumes, setIsLoadingResumes] = useState(true);
   const [isEditing, setIsEditing] = useState(-1); // ID of resume being edited. -1 when none
+  const [newFilename, setNewFilename] = useState("");
 
   const loadResumes = async (userId: string) => {
     try {
@@ -52,31 +55,57 @@ const Resume = () => {
     }
   };
 
-  const updateResume = async (resumeId: number) => {
-    setIsEditing(resumeId)
-    // try {
-    //   const response = await fetch(
-    //     `${backendUrl}/api/v1/resumes/${resumeId}`,
-    //     {
-    //       method: "DELETE",
-    //       credentials: "include",
-    //     }
-    //   );
-
-    //   if (response.ok && session.status === 'signed-in') {
-    //     setMessage('');
-    //     await loadResumes(session.user.userId);
-    //   }
-    // } catch (error) {
-    //   console.error("Resume loading error:", error);
-    //   setMessage("Could not connect to the backend.");
-    // } finally {
-    //   setIsLoadingResumes(false);
-    // }
+  const enableEditing = (resumeId: number, filename: string) => {
+    setIsEditing(resumeId);
+    setNewFilename(getCleanedFilename(filename)[0]);
   }
 
-  const deleteResume = async (resumeId: number) => {
-    const confirmDelete = window.confirm("Are you sure you want to delete this resume?");
+  const updateResume = async (oldFilename: string) => {
+    if (!newFilename) {
+      setMessage('Please enter a valid filename.');
+      return;
+    }
+
+    try {
+      const newName = newFilename + '.' + getCleanedFilename(oldFilename)[1];
+
+      const response = await fetch(
+        `${backendUrl}/api/v1/resumes/${isEditing}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          body: newName
+        }
+      );
+
+      if (response.ok && session.status === 'signed-in') {
+        setMessage('Successfully changed resume name from ' + oldFilename + ' to ' + newName);
+        setIsEditing(-1);
+        await loadResumes(session.user.userId);
+      }
+    } catch (error) {
+      console.error("Resume loading error:", error);
+      setMessage("Could not connect to the backend.");
+    } finally {
+      setIsLoadingResumes(false);
+    }
+  }
+
+  const handleFilenameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const filename = event.target.value;
+    setNewFilename(filename);
+  };
+
+  const getCleanedFilename = (filename: string) => {
+    const parts = filename.split('.');
+    const name = parts.slice(0, parts.length - 1).join('.');
+    const extension = parts.pop() ?? '';
+
+    return [name, extension];
+  }
+
+  const deleteResume = async (resumeId: number, filename: string) => {
+    const confirmDelete = window.confirm("Are you sure you want to delete resume '" + filename + "'?");
     if(!confirmDelete)
       return;
     try {
@@ -89,7 +118,7 @@ const Resume = () => {
       );
 
       if (response.ok && session.status === 'signed-in') {
-        setMessage('');
+        setMessage('Successfully deleted ' + filename);
         await loadResumes(session.user.userId);
       }
     } catch (error) {
@@ -301,15 +330,28 @@ const Resume = () => {
             </p>
           ) : (
             resumes.map((uploadedResume) => (
-              // <ResumeItem resume={uploadedResume} key={uploadedResume.id} />
               <div className="resume-selected-file" key={uploadedResume.id}>
                 <div>
                   {isEditing === uploadedResume.id?
-                    <input id="editResumeInput"></input>
-                    : <></>
-                  }
-                  <strong>{uploadedResume.fileName}</strong>
+                    <div style={{display: "flex"}}>
+                      <input  id="editResumeInput" 
+                              value={newFilename}
+                              onChange={handleFilenameChange}>
+                      </input>
+                      <strong>.{getCleanedFilename(uploadedResume.fileName)[1]}</strong>
 
+                      <div className="resume-icons" style={{marginLeft: "10px"}}>
+                        <button className="icon-green" onClick={() => updateResume(uploadedResume.fileName)}>
+                          <img src={ Ok } width={14} height={14}/>
+                        </button>
+                        <button className="icon-red" onClick={() => setIsEditing(-1)}>
+                          <img src={ Cancel } width={14}/>
+                        </button>
+                      </div>
+                    </div>
+                    : <strong>{uploadedResume.fileName}</strong>
+                  }
+                  
                   <div>
                     {(uploadedResume.sizeBytes / 1024).toFixed(1)} KB
                   </div>
@@ -322,15 +364,11 @@ const Resume = () => {
                   </div>
                 </div>
                 <div className="resume-icons">
-                  {/* on click -> isEditMode(T)
-                  icon changes color
-                  input with OG filename
-                  new icon next to filename (click to save)
-                  onSave -> updateResume() */}
-                  <button className="icon-blue" onClick={() => updateResume(uploadedResume.id)}>
+                  {isEditing !== uploadedResume.id && 
+                  <button className="icon-blue" onClick={() => enableEditing(uploadedResume.id, uploadedResume.fileName)}>
                     <img src={ Edit } width={18} height={17}/>
-                  </button>
-                  <button className="icon-red" onClick={() => deleteResume(uploadedResume.id)}>
+                  </button>}
+                  <button className="icon-red" onClick={() => deleteResume(uploadedResume.id, uploadedResume.fileName)}>
                     <img src={ Delete } width={18}/>
                   </button>
                 </div>
