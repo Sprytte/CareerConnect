@@ -5,6 +5,7 @@ import './styles/index.css'
 import App from './App.tsx'
 import Resume from './components/Resume.tsx'
 import Account from './components/Account.tsx'
+import Applications from './components/Applications.tsx'
 import SessionProvider from './auth/SessionProvider'
 
 createRoot(document.getElementById('root')!).render(
@@ -15,6 +16,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/" element={<App />} />
           <Route path="/account" element={<Account />} />
           <Route path="/account/resume" element={<Resume />} />
+          <Route path="/account/applications" element={<Applications />} />
         </Routes>
       </BrowserRouter>
     </SessionProvider>

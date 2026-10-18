@@ -1,0 +1,345 @@
+.applications-shell {
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+}
+
+.applications-page {
+  width: 100%;
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 32px 5% 88px;
+  flex: 1;
+}
+
+.applications-account-nav {
+  display: flex;
+  gap: 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid #e1e7ed;
+  color: #526078;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.applications-account-nav [aria-current] {
+  color: #137773;
+}
+
+.applications-account-nav a:hover {
+  color: #137773;
+  text-decoration: underline;
+}
+
+.applications-account-nav a span {
+  margin-left: 5px;
+}
+
+.applications-title {
+  padding: 48px 0 32px;
+}
+
+.applications-title .section-kicker {
+  margin: 0 0 13px;
+}
+
+.applications-title h1 {
+  margin: 0 0 13px;
+  font-size: clamp(34px, 4vw, 48px);
+  letter-spacing: -.055em;
+  line-height: 1.15;
+}
+
+.applications-title h1 span {
+  color: #168b87;
+}
+
+.applications-title > p:last-child {
+  margin: 0;
+  color: #526078;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.applications-results-top,
+.applications-list-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.applications-results-top > p {
+  color: #526078;
+  font-size: 13px;
+}
+
+.applications-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 0;
+  padding: 9px 3px;
+  color: #137773;
+  background: transparent;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.applications-refresh span {
+  font-size: 21px;
+}
+
+.applications-refresh:hover {
+  text-decoration: underline;
+}
+
+.applications-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 30px;
+}
+
+.applications-filter {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border: 1px solid #d9e1e8;
+  border-radius: 10px;
+  background: #fff;
+  color: #526078;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.applications-filter:hover {
+  border-color: #168b87;
+}
+
+.applications-filter[aria-pressed="true"] {
+  border-color: #16213b;
+  background: #16213b;
+  color: #fff;
+}
+
+.applications-filter-count {
+  min-width: 20px;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: #edf1f5;
+  color: #526078;
+  text-align: center;
+  font-size: 11px;
+}
+
+.applications-filter[aria-pressed="true"] .applications-filter-count {
+  background: #34415b;
+  color: #fff;
+}
+
+.applications-list-heading {
+  margin-bottom: 14px;
+}
+
+.applications-list-heading h2 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: -.025em;
+}
+
+.applications-list-heading p {
+  margin: 0;
+  color: #526078;
+  font-size: 12px;
+}
+
+.applications-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.application-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding: 25px 28px;
+  border: 1px solid #e1e7ed;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 14px #16213b04;
+}
+
+.application-card-main {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.application-company {
+  color: #526078;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.application-card h3 {
+  margin: 7px 0 12px;
+  font-size: 18px;
+  line-height: 1.4;
+  letter-spacing: -.025em;
+}
+
+.application-date {
+  margin: 0;
+  color: #526078;
+  font-size: 12px;
+}
+
+.application-status {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: 7px;
+  width: fit-content;
+  padding: 8px 12px;
+  border: 1px solid;
+  border-radius: 7px;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.application-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.application-status--applied {
+  color: #2455a0;
+  background: #edf3ff;
+  border-color: #d7e5ff;
+}
+
+.application-status--interview {
+  color: #875411;
+  background: #fff6e6;
+  border-color: #f2dfbb;
+}
+
+.application-status--offered {
+  color: #186a45;
+  background: #eaf8ef;
+  border-color: #cce9d8;
+}
+
+.application-status--rejected {
+  color: #a3334a;
+  background: #fff0f3;
+  border-color: #f3d7de;
+}
+
+.application-status--unknown {
+  color: #526078;
+  background: #f0f3f7;
+  border-color: #d9e1e8;
+}
+
+.applications-notice {
+  padding: 48px 24px;
+  border: 1px solid #e1e7ed;
+  border-radius: 14px;
+  background: #fff;
+  text-align: center;
+}
+
+.applications-notice-mark {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 auto 18px;
+  border-radius: 13px;
+  background: #e6f3f2;
+  color: #137773;
+  font-size: 25px;
+}
+
+.applications-notice h2 {
+  margin: 0 0 10px;
+  font-size: 20px;
+  letter-spacing: -.03em;
+}
+
+.applications-notice p {
+  max-width: 440px;
+  margin: 0 auto;
+  color: #526078;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.applications-notice-actions {
+  margin-top: 24px;
+}
+
+.applications-button {
+  display: inline-flex;
+  justify-content: center;
+  padding: 12px 20px;
+  border: 1px solid #137773;
+  border-radius: 9px;
+  background: #137773;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.applications-button:hover {
+  background: #0f625f;
+}
+
+.applications-shell .site-footer {
+  width: 90%;
+}
+
+@media (max-width: 600px) {
+  .applications-page {
+    padding: 24px 6% 56px;
+  }
+
+  .applications-title {
+    padding: 34px 0 26px;
+  }
+
+  .applications-filter {
+    padding: 10px 12px;
+  }
+
+  .application-card {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 17px;
+    padding: 22px;
+  }
+
+  .application-card h3 {
+    font-size: 17px;
+  }
+
+  .applications-notice {
+    padding: 34px 20px;
+  }
+}
