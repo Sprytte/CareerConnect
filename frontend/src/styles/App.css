@@ -597,3 +597,39 @@
     transition: none;
   }
 }
+
+/* The signed-in header needs room for Applications alongside sign-out. */
+.header-applications {
+  color: #137773;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 10px 0;
+}
+
+.header-applications:hover,
+.header-applications[aria-current="page"] {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 1000px) and (min-width: 761px) {
+  .site-header-inner {
+    flex-wrap: wrap;
+  }
+
+  .header-account {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .site-header-inner {
+    flex-wrap: wrap;
+  }
+
+  .header-account {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+}

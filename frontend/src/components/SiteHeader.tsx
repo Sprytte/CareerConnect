@@ -1,5 +1,5 @@
+import { Link, NavLink } from 'react-router-dom'
 import { loginUrl, logoutUrl, useSession } from '../auth/session'
-import { Link } from 'react-router-dom'
 
 export default function SiteHeader() {
   const session = useSession()
@@ -7,7 +7,7 @@ export default function SiteHeader() {
   return (
     <header className="site-header">
       <div className="site-header-inner">
-        <a className="brand" href="/" aria-label="CareerConnect home">
+        <Link className="brand" to="/" aria-label="CareerConnect home">
           <span className="brand-mark" aria-hidden="true">
             C
           </span>
@@ -15,7 +15,7 @@ export default function SiteHeader() {
           <span>
             Career<span className="brand-accent">Connect</span>
           </span>
-        </a>
+        </Link>
 
         <nav className="site-nav" aria-label="Main navigation">
           <a href="/#features">Features</a>
@@ -25,18 +25,18 @@ export default function SiteHeader() {
         <div className="header-account" aria-live="polite">
           {session.status === 'signed-in' ? (
             <>
-              <span className="header-account-name" title={session.user.name}>
+              <NavLink className="header-applications" to="/account/applications">Applications</NavLink>
+              <span
+                className="header-account-name"
+                title={session.user.name}
+              >
                 Hi, {session.user.name}
               </span>
-              <Link className="header-sign-in" to="/account">
-                My account
-              </Link>
+              <Link className="header-sign-in" to="/account">My account</Link>
               {/* A normal POST navigation lets the backend finish the Auth0
                   logout redirect; a fetch would not navigate the browser. */}
               <form method="post" action={logoutUrl}>
-                <button className="header-sign-in" type="submit">
-                  Sign out
-                </button>
+                <button className="header-sign-in" type="submit">Sign out</button>
               </form>
             </>
           ) : (
