@@ -1,76 +1,87 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import "../styles/SearchJobs.css";
 import SiteHeader from "./SiteHeader";
 import SiteFooter from "./SiteFooter";
-import { backendUrl } from "../constants";
+import { useSession } from "../auth/session";
 
 type JobPosting = {
   id: number;
-  userId: string;
-  jobName: string;
+  title: string;
   company: string;
-  description: string;
   location: string;
   category: string;
-  salary: string;
-  dateCreated: string;
+  description: string;
+  createdAt: string;
   deadline: string;
 };
 
+const mockJobs: JobPosting[] = [
+  {
+    id: 1,
+    title: "Software Developer Intern",
+    company: "CareerConnect",
+    location: "Montreal, QC",
+    category: "Software Engineering",
+    description:
+      "Work with a development team to build and improve web applications, test new features, and contribute to software design. You will collaborate with frontend and backend developers to implement new functionality, troubleshoot bugs, improve application performance, and maintain clean and reusable code. You will also participate in code reviews, team meetings, and feature planning sessions. The role may involve working with React, TypeScript, Java, REST APIs, databases, and Git-based development workflows. You will help test features before release, document technical changes, communicate progress with other team members, and contribute ideas for improving the overall user experience. This position is intended for students or junior developers who want practical experience working on a real software product in a collaborative development environment.",
+    createdAt: "2026-10-08",
+    deadline: "2026-11-15",
+  },
+  {
+    id: 2,
+    title: "Junior Embedded Systems Developer",
+    company: "Tech Systems",
+    location: "Montreal, QC",
+    category: "Computer Engineering",
+    description:
+      "Assist with embedded software development, testing, debugging, and integration of connected systems. You will work with microcontrollers, sensors, communication protocols, and hardware interfaces while collaborating with software and electrical engineering teams.",
+    createdAt: "2026-10-06",
+    deadline: "2026-11-20",
+  },
+  {
+    id: 3,
+    title: "Frontend Developer",
+    company: "Digital Labs",
+    location: "Toronto, ON",
+    category: "Software Engineering",
+    description:
+      "Build responsive user interfaces and collaborate with designers and backend developers to deliver polished web experiences. You will create reusable React components, improve accessibility, and test application behavior across devices.",
+    createdAt: "2026-10-04",
+    deadline: "2026-11-10",
+  },
+  {
+    id: 4,
+    title: "Data Analyst Intern",
+    company: "Insight Analytics",
+    location: "Ottawa, ON",
+    category: "Data",
+    description:
+      "Analyze datasets, prepare reports, and help identify trends that support business decisions. You will clean and organize data, create visual summaries, and communicate findings to team members.",
+    createdAt: "2026-10-02",
+    deadline: "2026-11-25",
+  },
+];
+
 export default function SearchJobs() {
-  const [jobs, setJobs] = useState<JobPosting[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState("");
+  const session = useSession();
 
   const [keyword, setKeyword] = useState("");
   const [location, setLocation] = useState("");
   const [category, setCategory] = useState("");
   const [expandedJobId, setExpandedJobId] = useState<number | null>(null);
 
-  useEffect(() => {
-    const loadJobs = async () => {
-      try {
-        setIsLoading(true);
-        setLoadError("");
-
-        const response = await fetch(
-          `${backendUrl}/api/v1/job-postings`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to load jobs");
-        }
-
-        const data: JobPosting[] = await response.json();
-        setJobs(data);
-      } catch (error) {
-        console.error("Error loading job postings:", error);
-        setLoadError(
-          "Job postings could not be loaded. Please try again later."
-        );
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadJobs();
-  }, []);
-
   const categories = Array.from(
-    new Set(jobs.map((job) => job.category))
+    new Set(mockJobs.map((job) => job.category))
   );
 
   const filteredJobs = useMemo(() => {
     const keywordValue = keyword.trim().toLowerCase();
     const locationValue = location.trim().toLowerCase();
 
-    return jobs.filter((job) => {
+    return mockJobs.filter((job) => {
       const matchesKeyword =
         keywordValue === "" ||
-        job.jobName.toLowerCase().includes(keywordValue) ||
+        job.title.toLowerCase().includes(keywordValue) ||
         job.company.toLowerCase().includes(keywordValue) ||
         job.description.toLowerCase().includes(keywordValue);
 
@@ -83,7 +94,7 @@ export default function SearchJobs() {
 
       return matchesKeyword && matchesLocation && matchesCategory;
     });
-  }, [jobs, keyword, location, category]);
+  }, [keyword, location, category]);
 
   const clearFilters = () => {
     setKeyword("");
@@ -92,12 +103,7 @@ export default function SearchJobs() {
   };
 
   const formatDate = (date: string) => {
-    if (!date) {
-      return "N/A";
-    }
-
-    const dateOnly = date.substring(0, 10);
-    const [year, month, day] = dateOnly.split("-");
+    const [year, month, day] = date.split("-");
 
     return new Date(
       Number(year),
@@ -122,6 +128,19 @@ export default function SearchJobs() {
             Explore available opportunities and narrow your search by
             keyword, location, or category.
           </p>
+
+          {session.status === "loading" && (
+            <p className="search-jobs-message">
+              Checking account...
+            </p>
+          )}
+
+          {session.status === "unavailable" && (
+            <p className="search-jobs-message">
+              Account information is currently unavailable, but you can
+              still browse jobs.
+            </p>
+          )}
         </section>
 
         <section className="job-search-filters">
@@ -179,27 +198,16 @@ export default function SearchJobs() {
         <div className="search-results-heading">
           <h2>Available Jobs</h2>
 
-          {!isLoading && !loadError && (
-            <span>
-              {filteredJobs.length}{" "}
-              {filteredJobs.length === 1 ? "result" : "results"}
-            </span>
-          )}
+          <span>
+            {filteredJobs.length}{" "}
+            {filteredJobs.length === 1 ? "result" : "results"}
+          </span>
         </div>
 
-        {isLoading ? (
-          <section className="search-jobs-empty">
-            <h2>Loading jobs...</h2>
-            <p>Please wait while available opportunities are loaded.</p>
-          </section>
-        ) : loadError ? (
-          <section className="search-jobs-empty">
-            <h2>Unable to load jobs</h2>
-            <p>{loadError}</p>
-          </section>
-        ) : filteredJobs.length === 0 ? (
+        {filteredJobs.length === 0 ? (
           <section className="search-jobs-empty">
             <h2>No jobs found</h2>
+
             <p>
               Try changing your keyword, location, or category.
             </p>
@@ -215,19 +223,12 @@ export default function SearchJobs() {
                     {job.category}
                   </span>
 
-                  <h2>{job.jobName}</h2>
+                  <h2>{job.title}</h2>
 
                   <div className="search-job-details">
                     <span>{job.company}</span>
                     <span>•</span>
                     <span>{job.location}</span>
-
-                    {job.salary && (
-                      <>
-                        <span>•</span>
-                        <span>{job.salary}</span>
-                      </>
-                    )}
                   </div>
 
                   <p
@@ -243,7 +244,7 @@ export default function SearchJobs() {
                   <div className="search-job-footer">
                     <div className="search-job-dates">
                       <span>
-                        Posted {formatDate(job.dateCreated)}
+                        Posted {formatDate(job.createdAt)}
                       </span>
 
                       <span>
