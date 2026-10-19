@@ -35,6 +35,16 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public ResumeResponseModel uploadResume(String userId, MultipartFile file) {
+        return uploadResumeForUser(userId, userId, file);
+    }
+
+    @Override
+    public ResumeResponseModel uploadResumeForUser(
+            String requestedUserId,
+            String authenticatedUserId,
+            MultipartFile file
+    ) {
+        ensureOwner(requestedUserId, authenticatedUserId);
         validateFile(file);
 
         String originalFileName = file.getOriginalFilename();
@@ -58,7 +68,7 @@ public class ResumeServiceImpl implements ResumeService {
             file.transferTo(filePath);
 
             Resume resume = Resume.builder()
-                    .userId(userId)
+                    .userId(authenticatedUserId)
                     .originalFileName(originalFileName)
                     .storedFileName(storedFileName)
                     .contentType(contentType)
@@ -79,8 +89,17 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public List<ResumeResponseModel> getResumesByUser(String userId) {
+        return getResumesForUser(userId, userId);
+    }
+
+    @Override
+    public List<ResumeResponseModel> getResumesForUser(
+            String requestedUserId,
+            String authenticatedUserId
+    ) {
+        ensureOwner(requestedUserId, authenticatedUserId);
         return resumeRepository
-                .findByUserIdOrderByUploadedAtDesc(userId)
+                .findByUserIdOrderByUploadedAtDesc(authenticatedUserId)
                 .stream()
                 .map(this::toResponseModel)
                 .toList();
@@ -88,11 +107,23 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public ResumeFile downloadResume(Integer resumeId) {
+        return downloadResumeInternal(resumeId, null);
+    }
+
+    @Override
+    public ResumeFile downloadResumeForUser(Integer resumeId, String authenticatedUserId) {
+        return downloadResumeInternal(resumeId, authenticatedUserId);
+    }
+
+    private ResumeFile downloadResumeInternal(Integer resumeId, String authenticatedUserId) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Resume not found"
                 ));
+        if (authenticatedUserId != null) {
+            ensureOwner(resume.getUserId(), authenticatedUserId);
+        }
 
         Path filePath = Paths.get(storagePath, resume.getStoredFileName());
 
@@ -112,11 +143,23 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public void deleteResume(Integer resumeId) {
+        deleteResumeInternal(resumeId, null);
+    }
+
+    @Override
+    public void deleteResumeForUser(Integer resumeId, String authenticatedUserId) {
+        deleteResumeInternal(resumeId, authenticatedUserId);
+    }
+
+    private void deleteResumeInternal(Integer resumeId, String authenticatedUserId) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Resume not found"
                 ));
+        if (authenticatedUserId != null) {
+            ensureOwner(resume.getUserId(), authenticatedUserId);
+        }
 
         Path filePath = Paths.get(storagePath, resume.getStoredFileName());
 
@@ -162,6 +205,16 @@ public class ResumeServiceImpl implements ResumeService {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Only PDF and DOCX files are supported"
+            );
+        }
+    }
+
+    private void ensureOwner(String resumeUserId, String authenticatedUserId) {
+        if (resumeUserId == null || authenticatedUserId == null
+                || !resumeUserId.equals(authenticatedUserId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You can only access your own resumes"
             );
         }
     }

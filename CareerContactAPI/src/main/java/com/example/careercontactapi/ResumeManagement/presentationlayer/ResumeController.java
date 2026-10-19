@@ -8,6 +8,8 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,24 +27,37 @@ public class ResumeController {
     @PostMapping("/users/{userId}")
     public ResponseEntity<ResumeResponseModel> uploadResume(
             @PathVariable String userId,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file,
+            @AuthenticationPrincipal OidcUser principal) {
 
         return ResponseEntity.status(201)
-                .body(resumeService.uploadResume(userId, file));
+                .body(resumeService.uploadResumeForUser(
+                        userId,
+                        principal.getSubject(),
+                        file
+                ));
     }
 
     @GetMapping("/users/{userId}")
     public ResponseEntity<List<ResumeResponseModel>> getUserResumes(
-            @PathVariable String userId) {
+            @PathVariable String userId,
+            @AuthenticationPrincipal OidcUser principal) {
 
-        return ResponseEntity.ok(resumeService.getResumesByUser(userId));
+        return ResponseEntity.ok(resumeService.getResumesForUser(
+                userId,
+                principal.getSubject()
+        ));
     }
 
     @GetMapping("/{resumeId}/download")
     public ResponseEntity<Resource> downloadResume(
-            @PathVariable Integer resumeId) {
+            @PathVariable Integer resumeId,
+            @AuthenticationPrincipal OidcUser principal) {
 
-        ResumeFile resumeFile = resumeService.downloadResume(resumeId);
+        ResumeFile resumeFile = resumeService.downloadResumeForUser(
+                resumeId,
+                principal.getSubject()
+        );
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDisposition(
@@ -61,9 +76,13 @@ public class ResumeController {
 
     @DeleteMapping("/{resumeId}")
     public ResponseEntity<Void> deleteResume(
-            @PathVariable Integer resumeId) {
+            @PathVariable Integer resumeId,
+            @AuthenticationPrincipal OidcUser principal) {
 
-        resumeService.deleteResume(resumeId);
+        resumeService.deleteResumeForUser(
+                resumeId,
+                principal.getSubject()
+        );
 
         return ResponseEntity.noContent().build();
     }

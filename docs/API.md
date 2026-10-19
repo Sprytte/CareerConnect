@@ -241,6 +241,74 @@ None.
 `200 OK` with an empty response body, or `500 Internal Server Error` if the
 Auth0 deletion fails. This endpoint does not return JSON.
 
+## Resume endpoints
+
+All resume endpoints require an authenticated browser session. Include
+`credentials: "include"` when calling them from the frontend. The `userId`
+path parameter must match the authenticated user's Auth0 subject identifier.
+Resume download and delete requests also verify that the requested resume
+belongs to the authenticated user.
+
+### Upload a resume
+
+**Request**
+
+```http
+POST /api/v1/resumes/users/{userId}
+Content-Type: multipart/form-data
+```
+
+The multipart request must contain a `file` part. PDF and DOCX files up to
+5 MB are supported.
+
+**Returns**
+
+`201 Created` with a `ResumeResponseModel` JSON object, `401 Unauthorized`
+without an authenticated session, or `403 Forbidden` when `{userId}` does not
+match the authenticated user.
+
+### List the current user's resumes
+
+**Request**
+
+```http
+GET /api/v1/resumes/users/{userId}
+```
+
+**Returns**
+
+`200 OK` with an array of `ResumeResponseModel` objects, `401 Unauthorized`
+without an authenticated session, or `403 Forbidden` when `{userId}` does not
+match the authenticated user.
+
+### Download a resume
+
+**Request**
+
+```http
+GET /api/v1/resumes/{resumeId}/download
+```
+
+**Returns**
+
+`200 OK` with the resume file, `401 Unauthorized` without an authenticated
+session, `403 Forbidden` when the resume belongs to another user, or
+`404 Not Found` when the resume or stored file does not exist.
+
+### Delete a resume
+
+**Request**
+
+```http
+DELETE /api/v1/resumes/{resumeId}
+```
+
+**Returns**
+
+`204 No Content` when the resume is deleted, `401 Unauthorized` without an
+authenticated session, `403 Forbidden` when the resume belongs to another
+user, or `404 Not Found` when the resume does not exist.
+
 ## Current security behavior
 
 The routes and authentication infrastructure are configured in:
@@ -251,13 +319,14 @@ CareerContactAPI/src/main/java/com/example/careercontactapi/security/SecurityCon
 CareerContactAPI/src/main/java/com/example/careercontactapi/security/service/Auth0LoginService.java
 ```
 
-At present, `SecurityConfig` uses `.anyRequest().permitAll()`, and several
-controller-level authentication checks are commented out. Consequently, most
-custom API endpoints are currently reachable without an authenticated session
-unless another configuration or deployment layer restricts them. The
-`GET /api/v1/cc/security/me` endpoint is an exception and explicitly requires
-an authenticated session. JWT validation is configured, but it is not the same
-as requiring authentication on every route.
+`SecurityConfig` uses `.anyRequest().permitAll()` for routes without a more
+specific rule. The `GET /api/v1/cc/security/me` endpoint and all
+`/api/v1/resumes/**` endpoints explicitly require an authenticated session.
+Resume controller and service checks additionally enforce that users can only
+list or upload against their own user ID and can only download or delete their
+own resumes. Other custom API endpoints may still be reachable without an
+authenticated session unless another configuration or deployment layer
+restricts them.
 
 If Spring Security rejects a request as unauthenticated, its configured JSON
 error response has this field:
@@ -266,5 +335,4 @@ error response has this field:
 | --- | --- | --- |
 | `message` | string | Authentication error message. |
 
-The endpoint behavior documented here is based on the current source code and
-may change when route authorization is enabled.
+The endpoint behavior documented here is based on the current source code.

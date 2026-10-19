@@ -73,6 +73,7 @@ public class SecurityConfig {
                         // .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.POST,"/api/v1/users/**")).authenticated()
                         // .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET,"/api/v1/users/**")).authenticated()
                         .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/v1/cc/security/me")).authenticated()
+                        .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/resumes/**")).authenticated()
                         .anyRequest().permitAll()
                 )
                 .exceptionHandling(exceptionHandling -> {
