@@ -16,4 +16,11 @@ public interface JobApplicationService {
     List<JobApplicationResponseModel> getApplicationsByJobPostingId(
             Integer jobId
     );
+
+    JobApplicationResponseModel updateApplication(
+            Integer jobId,
+            String ownerId,
+            Integer applicationId,
+            String status
+    );
 }
