@@ -6,13 +6,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -29,12 +28,12 @@ public class ResumeController {
     public ResponseEntity<ResumeResponseModel> uploadResume(
             @PathVariable String userId,
             @RequestPart("file") MultipartFile file,
-            Authentication authentication) {
+            @AuthenticationPrincipal OidcUser principal) {
 
         return ResponseEntity.status(201)
                 .body(resumeService.uploadResumeForUser(
                         userId,
-                        authenticatedUserId(authentication),
+                        principal.getSubject(),
                         file
                 ));
     }
@@ -42,22 +41,22 @@ public class ResumeController {
     @GetMapping("/users/{userId}")
     public ResponseEntity<List<ResumeResponseModel>> getUserResumes(
             @PathVariable String userId,
-            Authentication authentication) {
+            @AuthenticationPrincipal OidcUser principal) {
 
         return ResponseEntity.ok(resumeService.getResumesForUser(
                 userId,
-                authenticatedUserId(authentication)
+                principal.getSubject()
         ));
     }
 
     @GetMapping("/{resumeId}/download")
     public ResponseEntity<Resource> downloadResume(
             @PathVariable Integer resumeId,
-            Authentication authentication) {
+            @AuthenticationPrincipal OidcUser principal) {
 
         ResumeFile resumeFile = resumeService.downloadResumeForUser(
                 resumeId,
-                authenticatedUserId(authentication)
+                principal.getSubject()
         );
 
         HttpHeaders headers = new HttpHeaders();
@@ -78,28 +77,13 @@ public class ResumeController {
     @DeleteMapping("/{resumeId}")
     public ResponseEntity<Void> deleteResume(
             @PathVariable Integer resumeId,
-            Authentication authentication) {
+            @AuthenticationPrincipal OidcUser principal) {
 
         resumeService.deleteResumeForUser(
                 resumeId,
-                authenticatedUserId(authentication)
+                principal.getSubject()
         );
 
         return ResponseEntity.noContent().build();
-    }
-
-    private String authenticatedUserId(Authentication authentication) {
-        if (authentication == null
-                || !authentication.isAuthenticated()
-                || authentication.getName() == null
-                || authentication.getName().isBlank()
-                || "anonymousUser".equals(authentication.getName())) {
-            throw new ResponseStatusException(
-                    HttpStatus.UNAUTHORIZED,
-                    "Authentication is required"
-            );
-        }
-
-        return authentication.getName();
     }
 }
