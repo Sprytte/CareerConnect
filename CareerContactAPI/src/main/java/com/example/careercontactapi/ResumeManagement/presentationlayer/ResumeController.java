@@ -1,14 +1,19 @@
 package com.example.careercontactapi.ResumeManagement.presentationlayer;
 
-import com.example.careercontactapi.ResumeManagement.datalayer.ResumeFile;
 import com.example.careercontactapi.ResumeManagement.businesslayer.ResumeService;
+import com.example.careercontactapi.ResumeManagement.datalayer.ResumeFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
-import org.springframework.http.*;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -21,27 +26,36 @@ public class ResumeController {
 
     private final ResumeService resumeService;
 
-    @PostMapping("/users/{userId}")
+    @PostMapping
     public ResponseEntity<ResumeResponseModel> uploadResume(
-            @PathVariable String userId,
-            @RequestPart("file") MultipartFile file) {
+            @RequestPart("file") MultipartFile file,
+            @AuthenticationPrincipal OidcUser principal) {
 
-        return ResponseEntity.status(201)
-                .body(resumeService.uploadResume(userId, file));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(resumeService.uploadResumeForUser(
+                        authenticatedUserId(principal),
+                        file
+                ));
     }
 
-    @GetMapping("/users/{userId}")
+    @GetMapping
     public ResponseEntity<List<ResumeResponseModel>> getUserResumes(
-            @PathVariable String userId) {
+            @AuthenticationPrincipal OidcUser principal) {
 
-        return ResponseEntity.ok(resumeService.getResumesByUser(userId));
+        return ResponseEntity.ok(resumeService.getResumesForUser(
+                authenticatedUserId(principal)
+        ));
     }
 
     @GetMapping("/{resumeId}/download")
     public ResponseEntity<Resource> downloadResume(
-            @PathVariable Integer resumeId) {
+            @PathVariable Integer resumeId,
+            @AuthenticationPrincipal OidcUser principal) {
 
-        ResumeFile resumeFile = resumeService.downloadResume(resumeId);
+        ResumeFile resumeFile = resumeService.downloadResumeForUser(
+                resumeId,
+                authenticatedUserId(principal)
+        );
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDisposition(
@@ -49,9 +63,7 @@ public class ResumeController {
                         .filename(resumeFile.originalName(), StandardCharsets.UTF_8)
                         .build()
         );
-        headers.setContentType(
-                MediaType.parseMediaType(resumeFile.contentType())
-        );
+        headers.setContentType(MediaType.parseMediaType(resumeFile.contentType()));
 
         return ResponseEntity.ok()
                 .headers(headers)
@@ -59,24 +71,41 @@ public class ResumeController {
     }
 
     @PutMapping("/{resumeId}")
-    public ResponseEntity<ResumeResponseModel> updateResume(@PathVariable Integer resumeId,
-                                                            @RequestBody String filename,
-                                                            @AuthenticationPrincipal OidcUser principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
+    public ResponseEntity<ResumeResponseModel> updateResume(
+            @PathVariable Integer resumeId,
+            @RequestBody String filename,
+            @AuthenticationPrincipal OidcUser principal) {
 
-        return ResponseEntity.status(200).body(resumeService.updateResume(resumeId, filename, principal.getSubject()));
+        return ResponseEntity.ok(resumeService.updateResume(
+                resumeId,
+                filename,
+                authenticatedUserId(principal)
+        ));
     }
 
     @DeleteMapping("/{resumeId}")
-    public ResponseEntity<Void> deleteResume(@PathVariable Integer resumeId,
-                                             @AuthenticationPrincipal OidcUser principal) {
-        if (principal == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<Void> deleteResume(
+            @PathVariable Integer resumeId,
+            @AuthenticationPrincipal OidcUser principal) {
+
+        resumeService.deleteResumeForUser(
+                resumeId,
+                authenticatedUserId(principal)
+        );
+
+        return ResponseEntity.noContent().build();
+    }
+
+    private String authenticatedUserId(OidcUser principal) {
+        if (principal == null
+                || principal.getSubject() == null
+                || principal.getSubject().isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "Authentication is required"
+            );
         }
 
-        resumeService.deleteResume(resumeId, principal.getSubject());
-        return ResponseEntity.noContent().build();
+        return principal.getSubject();
     }
 }

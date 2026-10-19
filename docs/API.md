@@ -466,6 +466,91 @@ neutral missing-posting labels. Legacy `SUBMITTED`, `Offer`, and `Reject` map to
 `Applied`, `Offered`, and `Rejected`. Unknown statuses stay unknown and display
 neutrally in the interface. Status writes remain a separate recruiter workflow.
 
+## Resume endpoints
+
+All resume endpoints require an authenticated browser session. Include
+`credentials: "include"` when calling them from the frontend. The server
+derives the owner from the authenticated user's OIDC subject; clients do not
+send a `userId` path parameter. Resume download, update, and delete requests
+also verify that the requested resume belongs to the authenticated user.
+
+### Upload a resume
+
+**Request**
+
+```http
+POST /api/v1/resumes
+Content-Type: multipart/form-data
+```
+
+The multipart request must contain a `file` part. PDF and DOCX files up to
+5 MB are supported.
+
+**Returns**
+
+`201 Created` with a `ResumeResponseModel` JSON object, or `401 Unauthorized`
+without an authenticated session.
+
+### List the current user's resumes
+
+**Request**
+
+```http
+GET /api/v1/resumes
+```
+
+**Returns**
+
+`200 OK` with an array of `ResumeResponseModel` objects, or `401 Unauthorized`
+without an authenticated session. The list is scoped to the current user.
+
+### Update a resume filename
+
+**Request**
+
+```http
+PUT /api/v1/resumes/{resumeId}
+Content-Type: text/plain
+```
+
+The request body is the new filename, including its extension. The file
+contents are not changed.
+
+**Returns**
+
+`200 OK` with the updated `ResumeResponseModel`, `400 Bad Request` for a blank
+filename, `401 Unauthorized` without an authenticated session, `403 Forbidden`
+when the resume belongs to another user, or `404 Not Found` when the resume
+does not exist.
+
+### Download a resume
+
+**Request**
+
+```http
+GET /api/v1/resumes/{resumeId}/download
+```
+
+**Returns**
+
+`200 OK` with the resume file, `401 Unauthorized` without an authenticated
+session, `403 Forbidden` when the resume belongs to another user, or
+`404 Not Found` when the resume or stored file does not exist.
+
+### Delete a resume
+
+**Request**
+
+```http
+DELETE /api/v1/resumes/{resumeId}
+```
+
+**Returns**
+
+`204 No Content` when the resume is deleted, `401 Unauthorized` without an
+authenticated session, `403 Forbidden` when the resume belongs to another
+user, or `404 Not Found` when the resume does not exist.
+
 ## Current security behavior
 
 The routes and authentication infrastructure are configured in:
@@ -476,17 +561,21 @@ CareerContactAPI/src/main/java/com/example/careercontactapi/security/SecurityCon
 CareerContactAPI/src/main/java/com/example/careercontactapi/security/service/Auth0LoginService.java
 ```
 
-The global fallback in `SecurityConfig` remains `.anyRequest().permitAll()`.
-Controllers must therefore enforce their own authentication and ownership checks.
-Applying to a posting and recruiter-owned lists already do so on main. The
-profile/password integration in PR #64 and the job-seeker list in PR #70 add
-checks to their respective routes. `/me` also requires an authenticated session.
+`SecurityConfig` uses `.anyRequest().permitAll()` for routes without a more
+specific rule. The `GET /api/v1/cc/security/me` endpoint and all
+`/api/v1/resumes/**` endpoints explicitly require an authenticated session.
+Resume controller and service checks additionally enforce that users can only
+list or upload against their own user ID and can only download or delete their
+own resumes. Other custom API endpoints may still be reachable without an
+authenticated session unless another configuration or deployment layer
+restricts them. The job-application and job-seeker application-list endpoints
+also enforce authentication and derive the applicant account from the current
+session rather than accepting a caller-supplied user ID.
 
-Public job-posting reads are intentional. Job-posting PUT/DELETE on the reviewed
-main base still need ownership checks; resume authorization is covered by the
-separate open PR #73. JWT validation alone does not require authentication on
-every route. Read each endpoint's authorization rules rather than treating a
-successful JWT configuration as evidence that all routes are protected.
+Public job-posting reads are intentional. JWT validation alone does not require
+authentication on every route, so each endpoint's authorization rules should be
+read independently rather than treating successful JWT configuration as proof
+that all routes are protected.
 
 If Spring Security rejects a request as unauthenticated, its configured JSON
 error response has this field:
@@ -495,5 +584,4 @@ error response has this field:
 | --- | --- | --- |
 | `message` | string | Authentication error message. |
 
-The endpoint behavior documented here is based on the current source code and
-may change when route authorization is enabled.
+The endpoint behavior documented here is based on the current source code.

@@ -34,11 +34,13 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public ResumeResponseModel uploadResume(String userId, MultipartFile file) {
+    public ResumeResponseModel uploadResumeForUser(
+            String authenticatedUserId,
+            MultipartFile file
+    ) {
         validateFile(file);
 
         String originalFileName = file.getOriginalFilename();
-
         if (originalFileName == null || originalFileName.isBlank()) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -47,7 +49,6 @@ public class ResumeServiceImpl implements ResumeService {
         }
 
         String extension = getExtension(originalFileName);
-        String contentType = getContentType(extension);
         String storedFileName = UUID.randomUUID() + "." + extension;
 
         try {
@@ -58,16 +59,15 @@ public class ResumeServiceImpl implements ResumeService {
             file.transferTo(filePath);
 
             Resume resume = Resume.builder()
-                    .userId(userId)
+                    .userId(authenticatedUserId)
                     .originalFileName(originalFileName)
                     .storedFileName(storedFileName)
-                    .contentType(contentType)
+                    .contentType(getContentType(extension))
                     .sizeBytes(file.getSize())
                     .uploadedAt(LocalDateTime.now())
                     .build();
 
             return toResponseModel(resumeRepository.save(resume));
-
         } catch (IOException e) {
             throw new ResponseStatusException(
                     HttpStatus.INTERNAL_SERVER_ERROR,
@@ -78,22 +78,20 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public List<ResumeResponseModel> getResumesByUser(String userId) {
+    public List<ResumeResponseModel> getResumesForUser(String authenticatedUserId) {
         return resumeRepository
-                .findByUserIdOrderByUploadedAtDesc(userId)
+                .findByUserIdOrderByUploadedAtDesc(authenticatedUserId)
                 .stream()
                 .map(this::toResponseModel)
                 .toList();
     }
 
     @Override
-    public ResumeFile downloadResume(Integer resumeId) {
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Resume not found"
-                ));
-
+    public ResumeFile downloadResumeForUser(
+            Integer resumeId,
+            String authenticatedUserId
+    ) {
+        Resume resume = findOwnedResume(resumeId, authenticatedUserId);
         Path filePath = Paths.get(storagePath, resume.getStoredFileName());
 
         if (!Files.exists(filePath)) {
@@ -111,21 +109,29 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public ResumeResponseModel updateResume(Integer resumeId, String newFilename, String userId) {
-        Resume originalResume = resumeRepository.findByIdAndUserId(resumeId, userId);
-        if (originalResume == null)
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume not found");
+    public ResumeResponseModel updateResume(
+            Integer resumeId,
+            String newFilename,
+            String authenticatedUserId
+    ) {
+        Resume resume = findOwnedResume(resumeId, authenticatedUserId);
+        if (newFilename == null || newFilename.isBlank()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "File name is required"
+            );
+        }
 
-        originalResume.setOriginalFileName(newFilename.trim());
-        return toResponseModel(resumeRepository.save(originalResume));
+        resume.setOriginalFileName(newFilename.trim());
+        return toResponseModel(resumeRepository.save(resume));
     }
 
     @Override
-    public void deleteResume(Integer resumeId, String userId) {
-        Resume resume = resumeRepository.findByIdAndUserId(resumeId, userId);
-        if (resume == null)
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume not found");
-
+    public void deleteResumeForUser(
+            Integer resumeId,
+            String authenticatedUserId
+    ) {
+        Resume resume = findOwnedResume(resumeId, authenticatedUserId);
         Path filePath = Paths.get(storagePath, resume.getStoredFileName());
 
         try {
@@ -138,6 +144,17 @@ public class ResumeServiceImpl implements ResumeService {
                     e
             );
         }
+    }
+
+    private Resume findOwnedResume(Integer resumeId, String authenticatedUserId) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Resume not found"
+                ));
+
+        ensureOwner(resume.getUserId(), authenticatedUserId);
+        return resume;
     }
 
     private void validateFile(MultipartFile file) {
@@ -156,7 +173,6 @@ public class ResumeServiceImpl implements ResumeService {
         }
 
         String fileName = file.getOriginalFilename();
-
         if (fileName == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -165,7 +181,6 @@ public class ResumeServiceImpl implements ResumeService {
         }
 
         String extension = getExtension(fileName);
-
         if (!extension.equals("pdf") && !extension.equals("docx")) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
@@ -174,22 +189,27 @@ public class ResumeServiceImpl implements ResumeService {
         }
     }
 
+    private void ensureOwner(String resumeOwnerUserId, String authenticatedUserId) {
+        if (resumeOwnerUserId == null || authenticatedUserId == null
+                || !resumeOwnerUserId.equals(authenticatedUserId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "You can only access your own resumes"
+            );
+        }
+    }
+
     private String getExtension(String fileName) {
         int lastDot = fileName.lastIndexOf('.');
-
-        if (lastDot == -1) {
-            return "";
-        }
-
-        return fileName.substring(lastDot + 1).toLowerCase();
+        return lastDot == -1
+                ? ""
+                : fileName.substring(lastDot + 1).toLowerCase();
     }
 
     private String getContentType(String extension) {
-        if (extension.equals("pdf")) {
-            return "application/pdf";
-        }
-
-        return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+        return extension.equals("pdf")
+                ? "application/pdf"
+                : "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     }
 
     private ResumeResponseModel toResponseModel(Resume resume) {

@@ -33,7 +33,7 @@ const Resume = () => {
       setIsLoadingResumes(true);
 
       const response = await fetch(
-        `${backendUrl}/api/v1/resumes/users/${encodeURIComponent(userId)}`,
+        `${backendUrl}/api/v1/resumes`,
         {
           credentials: "include",
         }
@@ -231,7 +231,7 @@ const Resume = () => {
       setMessage("Uploading resume...");
 
       const response = await fetch(
-        `${backendUrl}/api/v1/resumes/users/${encodeURIComponent(userId)}`,
+        `${backendUrl}/api/v1/resumes`,
         {
           method: "POST",
           body: formData,
