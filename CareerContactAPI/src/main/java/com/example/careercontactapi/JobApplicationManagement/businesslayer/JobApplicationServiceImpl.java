@@ -4,6 +4,7 @@ import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplic
 import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplicationRepository;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationRequestModel;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
+import com.example.careercontactapi.JobPostingManagement.datalayer.JobPosting;
 import com.example.careercontactapi.JobPostingManagement.datalayer.JobPostingRepository;
 import com.example.careercontactapi.ResumeManagement.datalayer.Resume;
 import com.example.careercontactapi.ResumeManagement.datalayer.ResumeRepository;
@@ -36,10 +37,24 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             String userId,
             JobApplicationRequestModel requestModel
     ) {
-        if (!jobPostingRepository.existsById(jobId)) {
+        JobPosting jobPosting = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Job posting with id " + jobId + " not found"
+                ));
+
+        if (jobPosting.getDeadline() != null
+                && !LocalDateTime.now().isBefore(jobPosting.getDeadline())) {
             throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Job posting with id " + jobId + " not found"
+                    HttpStatus.BAD_REQUEST,
+                    "The deadline for this job posting has passed"
+            );
+        }
+
+        if (jobApplicationRepository.existsByJobPostingIdAndUserId(jobId, userId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "You have already applied to this job posting"
             );
         }
 
@@ -62,6 +77,8 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                     "You can only apply with your own resume"
             );
         }
+
+
 
         JobApplication application = JobApplication.builder()
                 .jobPostingId(jobId)

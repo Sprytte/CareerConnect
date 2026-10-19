@@ -35,5 +35,6 @@ CREATE TABLE IF NOT EXISTS job_applications (
     user_id VARCHAR(64) NOT NULL,
     resume_id INTEGER NOT NULL,
     status VARCHAR(32) NOT NULL,
-    applied_at TIMESTAMP NOT NULL
+    applied_at TIMESTAMP NOT NULL,
+    UNIQUE (job_posting_id, user_id)
 );
