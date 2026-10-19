@@ -1,6 +1,9 @@
 package com.example.careercontactapi.JobPostingManagement.presentationlayer;
 
 import com.example.careercontactapi.JobPostingManagement.businesslayer.JobPostingService;
+import com.example.careercontactapi.JobApplicationManagement.businesslayer.JobApplicationService;
+import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationRequestModel;
+import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,6 +23,25 @@ import java.util.List;
 public class JobPostingController {
 
     private final JobPostingService jobPostingService;
+    private final JobApplicationService jobApplicationService;
+
+    @PostMapping("/{jobId}/apply")
+    public ResponseEntity<JobApplicationResponseModel> applyToJobPosting(
+            @PathVariable Integer jobId,
+            @RequestBody(required = false) JobApplicationRequestModel requestModel,
+            @AuthenticationPrincipal OidcUser principal
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(jobApplicationService.applyToJobPosting(
+                        jobId,
+                        principal.getSubject(),
+                        requestModel
+                ));
+    }
 
     @PostMapping("")
     public ResponseEntity<?> createJobPosting(
