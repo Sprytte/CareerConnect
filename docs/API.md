@@ -337,6 +337,76 @@ None.
 `200 OK` with an empty response body, or `500 Internal Server Error` if the
 Auth0 deletion fails. This endpoint does not return JSON.
 
+## Job posting endpoints
+
+### Apply to a job posting
+
+**Request**
+
+```http
+POST /api/v1/job-postings/{jobId}/apply
+Content-Type: application/json
+```
+
+For a browser session, include credentials:
+
+```js
+const response = await fetch(
+  "http://localhost:8080/api/v1/job-postings/1/apply",
+  {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({})
+  }
+);
+```
+
+**Purpose**
+
+Creates a job application for the currently authenticated user. The
+authenticated user's Auth0 subject is used as the applicant; it is not
+provided in the request body.
+
+**Body**
+
+The body is optional. To apply with a specific resume, provide its ID:
+
+```json
+{
+  "resumeId": 1
+}
+```
+
+If `resumeId` is omitted, the user's most recently uploaded resume is used.
+The user must have at least one resume, and a user can only apply with a
+resume that belongs to them.
+
+**Returns**
+
+`201 Created` with a `JobApplicationResponseModel` JSON object:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | integer | Created application ID. |
+| `jobPostingId` | integer | ID of the job posting. |
+| `userId` | string | Auth0 subject of the applicant. |
+| `resumeId` | integer | Resume submitted with the application. |
+| `status` | string | Initial application status, currently `SUBMITTED`. |
+| `appliedAt` | string | Application timestamp in ISO-8601 format. |
+
+Possible errors:
+
+| Status | Description |
+| --- | --- |
+| `400 Bad Request` | The user has no resume and no resume can be selected. |
+| `401 Unauthorized` | No authenticated browser session was supplied. |
+| `403 Forbidden` | The selected resume belongs to another user. |
+| `404 Not Found` | The job posting or selected resume does not exist. |
+
 ## Current security behavior
 
 The routes and authentication infrastructure are configured in:
