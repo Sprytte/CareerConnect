@@ -30,7 +30,6 @@ public class ResumeController {
     public ResponseEntity<ResumeResponseModel> uploadResume(
             @RequestPart("file") MultipartFile file,
             @AuthenticationPrincipal OidcUser principal) {
-
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(resumeService.uploadResumeForUser(
                         authenticatedUserId(principal),
@@ -41,7 +40,6 @@ public class ResumeController {
     @GetMapping
     public ResponseEntity<List<ResumeResponseModel>> getUserResumes(
             @AuthenticationPrincipal OidcUser principal) {
-
         return ResponseEntity.ok(resumeService.getResumesForUser(
                 authenticatedUserId(principal)
         ));
@@ -51,7 +49,6 @@ public class ResumeController {
     public ResponseEntity<Resource> downloadResume(
             @PathVariable Integer resumeId,
             @AuthenticationPrincipal OidcUser principal) {
-
         ResumeFile resumeFile = resumeService.downloadResumeForUser(
                 resumeId,
                 authenticatedUserId(principal)
@@ -75,7 +72,6 @@ public class ResumeController {
             @PathVariable Integer resumeId,
             @RequestBody String filename,
             @AuthenticationPrincipal OidcUser principal) {
-
         return ResponseEntity.ok(resumeService.updateResume(
                 resumeId,
                 filename,
@@ -87,12 +83,10 @@ public class ResumeController {
     public ResponseEntity<Void> deleteResume(
             @PathVariable Integer resumeId,
             @AuthenticationPrincipal OidcUser principal) {
-
         resumeService.deleteResumeForUser(
                 resumeId,
                 authenticatedUserId(principal)
         );
-
         return ResponseEntity.noContent().build();
     }
 
@@ -105,7 +99,6 @@ public class ResumeController {
                     "Authentication is required"
             );
         }
-
         return principal.getSubject();
     }
 }
