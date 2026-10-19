@@ -403,9 +403,11 @@ Possible errors:
 | Status | Description |
 | --- | --- |
 | `400 Bad Request` | The user has no resume and no resume can be selected. |
+| `400 Bad Request` | The deadline for the job posting has passed. |
 | `401 Unauthorized` | No authenticated browser session was supplied. |
 | `403 Forbidden` | The selected resume belongs to another user. |
 | `404 Not Found` | The job posting or selected resume does not exist. |
+| `409 Conflict` | The user has already applied to the job posting. |
 
 ## Current security behavior
 
