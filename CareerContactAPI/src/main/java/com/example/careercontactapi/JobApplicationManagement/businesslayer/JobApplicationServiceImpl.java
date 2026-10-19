@@ -13,9 +13,17 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class JobApplicationServiceImpl implements JobApplicationService {
+
+    private static final Map<String, String> VALID_STATUSES = Map.of(
+            "INTERVIEW", "Interview",
+            "OFFER", "Offer",
+            "REJECT", "Reject"
+    );
 
     private final JobApplicationRepository jobApplicationRepository;
     private final JobPostingRepository jobPostingRepository;
@@ -88,6 +96,61 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .appliedAt(LocalDateTime.now())
                 .build();
 
+        return toResponseModel(jobApplicationRepository.save(application));
+    }
+
+    @Override
+    public JobApplicationResponseModel updateApplication(
+            Integer jobId,
+            String ownerId,
+            Integer applicationId,
+            String status
+    ) {
+        JobPosting jobPosting = jobPostingRepository.findById(jobId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Job posting with id " + jobId + " not found"
+                ));
+
+        if (!jobPosting.getUserId().equals(ownerId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Only the owner of this job posting can edit applications"
+            );
+        }
+
+        if (applicationId == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "An applicationId is required"
+            );
+        }
+
+        String normalizedStatus = status == null
+                ? null
+                : VALID_STATUSES.get(status.trim().toUpperCase(Locale.ROOT));
+        if (normalizedStatus == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Status must be one of: Interview, Offer, Reject"
+            );
+        }
+
+        JobApplication application = jobApplicationRepository.findById(applicationId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Application with id " + applicationId + " not found"
+                ));
+
+        if (!jobId.equals(application.getJobPostingId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Application with id " + applicationId
+                            + " not found for job posting " + jobId
+            );
+        }
+
+        application.setStatus(normalizedStatus);
         return toResponseModel(jobApplicationRepository.save(application));
     }
 

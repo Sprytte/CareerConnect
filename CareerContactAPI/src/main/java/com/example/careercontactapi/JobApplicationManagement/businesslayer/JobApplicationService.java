@@ -10,4 +10,11 @@ public interface JobApplicationService {
             String userId,
             JobApplicationRequestModel requestModel
     );
+
+    JobApplicationResponseModel updateApplication(
+            Integer jobId,
+            String ownerId,
+            Integer applicationId,
+            String status
+    );
 }

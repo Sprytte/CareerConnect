@@ -409,6 +409,33 @@ Possible errors:
 | `404 Not Found` | The job posting or selected resume does not exist. |
 | `409 Conflict` | The user has already applied to the job posting. |
 
+## Application endpoints
+
+### Update an applicant's status
+
+**Request**
+
+```http
+PUT /api/v1/account/job-postings/{jobId}/applications
+Content-Type: application/json
+```
+
+The authenticated user must own the job posting. Identify the application in
+the request body and provide one of the allowed statuses:
+
+```json
+{
+  "applicationId": 1,
+  "status": "Interview"
+}
+```
+
+`Offer` and `Reject` are also valid statuses. The endpoint returns the updated
+application. It returns `401 Unauthorized` without an authenticated user,
+`403 Forbidden` when the user does not own the job posting, `404 Not Found`
+when the job posting or application does not exist, and `400 Bad Request` for
+a missing or invalid status/application ID.
+
 ## Current security behavior
 
 The routes and authentication infrastructure are configured in:
