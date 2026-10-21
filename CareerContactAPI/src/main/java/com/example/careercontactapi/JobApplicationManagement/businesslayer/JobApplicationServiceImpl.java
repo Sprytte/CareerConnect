@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class JobApplicationServiceImpl implements JobApplicationService {
@@ -59,8 +60,11 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         }
 
         Integer resumeId = requestModel == null ? null : requestModel.resumeId();
+
         Resume resume = resumeId == null
-                ? resumeRepository.findByUserIdOrderByUploadedAtDesc(userId).stream().findFirst()
+                ? resumeRepository.findByUserIdOrderByUploadedAtDesc(userId)
+                .stream()
+                .findFirst()
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.BAD_REQUEST,
                         "A resume is required to apply"
@@ -78,8 +82,6 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             );
         }
 
-
-
         JobApplication application = JobApplication.builder()
                 .jobPostingId(jobId)
                 .userId(userId)
@@ -91,7 +93,20 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         return toResponseModel(jobApplicationRepository.save(application));
     }
 
-    private JobApplicationResponseModel toResponseModel(JobApplication application) {
+    @Override
+    public List<JobApplicationResponseModel> getApplicationsByJobPostingId(
+            Integer jobId
+    ) {
+        return jobApplicationRepository
+                .findAllByJobPostingId(jobId)
+                .stream()
+                .map(this::toResponseModel)
+                .toList();
+    }
+
+    private JobApplicationResponseModel toResponseModel(
+            JobApplication application
+    ) {
         return new JobApplicationResponseModel(
                 application.getId(),
                 application.getJobPostingId(),

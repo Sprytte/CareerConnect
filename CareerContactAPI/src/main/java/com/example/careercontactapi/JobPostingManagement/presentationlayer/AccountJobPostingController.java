@@ -1,5 +1,7 @@
 package com.example.careercontactapi.JobPostingManagement.presentationlayer;
 
+import com.example.careercontactapi.JobApplicationManagement.businesslayer.JobApplicationService;
+import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
 import com.example.careercontactapi.JobPostingManagement.businesslayer.JobPostingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +21,7 @@ import java.util.List;
 public class AccountJobPostingController {
 
     private final JobPostingService jobPostingService;
+    private final JobApplicationService jobApplicationService;
 
     @GetMapping("")
     public ResponseEntity<List<JobPostingResponseModel>> getCreatedJobPostings(
@@ -53,6 +56,27 @@ public class AccountJobPostingController {
                         jobId,
                         principal.getSubject()
                 )
+        );
+    }
+
+    @GetMapping("/{jobId}/applications")
+    public ResponseEntity<List<JobApplicationResponseModel>> getApplicationsForJobPosting(
+            @AuthenticationPrincipal OidcUser principal,
+            @PathVariable Integer jobId
+    ) {
+        if (principal == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .build();
+        }
+
+        jobPostingService.getJobPostingByIdAndUserId(
+                jobId,
+                principal.getSubject()
+        );
+
+        return ResponseEntity.ok(
+                jobApplicationService.getApplicationsByJobPostingId(jobId)
         );
     }
 }
