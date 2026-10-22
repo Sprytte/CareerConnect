@@ -9,4 +9,6 @@ public interface JobApplicationRepository extends JpaRepository<JobApplication, 
     boolean existsByJobPostingIdAndUserId(Integer jobPostingId, String userId);
 
     List<JobApplication> findAllByJobPostingId(Integer jobPostingId);
+
+    List<JobApplication> findAllByUserIdOrderByAppliedAtDescIdDesc(String userId);
 }
