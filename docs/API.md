@@ -433,7 +433,7 @@ resume that belongs to them.
 | `jobPostingId` | integer | ID of the job posting. |
 | `userId` | string | Auth0 subject of the applicant. |
 | `resumeId` | integer | Resume submitted with the application. |
-| `status` | string | Initial application status, currently `SUBMITTED`. |
+| `status` | string | Initial application status, `Applied` (older records may contain `SUBMITTED`). |
 | `appliedAt` | string | Application timestamp in ISO-8601 format. |
 
 Possible errors:
@@ -446,6 +446,25 @@ Possible errors:
 | `403 Forbidden` | The selected resume belongs to another user. |
 | `404 Not Found` | The job posting or selected resume does not exist. |
 | `409 Conflict` | The user has already applied to the job posting. |
+
+## Job-seeker application list
+
+```http
+GET /api/v1/account/applications
+```
+
+Requires an authenticated OIDC session. The server derives the account from
+that session and returns all of its applications ordered by applied time and
+ID descending. There is no caller-selected user ID. A second account's records
+are excluded at the repository query. No session returns 401. The response is
+not cached (`Cache-Control: no-store`). An empty account returns `[]`.
+
+Each object has integer `id`, string `jobTitle`, string `company`, nullable
+string `status`, and nullable date-only `appliedOn` (`YYYY-MM-DD`). Posting details
+are fetched in one batch. A deleted posting retains its application record with
+neutral missing-posting labels. Legacy `SUBMITTED`, `Offer`, and `Reject` map to
+`Applied`, `Offered`, and `Rejected`. Unknown statuses stay unknown and display
+neutrally in the interface. Status writes remain a separate recruiter workflow.
 
 ## Current security behavior
 

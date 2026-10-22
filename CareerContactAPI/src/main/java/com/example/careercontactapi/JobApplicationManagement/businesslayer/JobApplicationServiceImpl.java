@@ -86,7 +86,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .jobPostingId(jobId)
                 .userId(userId)
                 .resumeId(resume.getId())
-                .status("SUBMITTED")
+                .status("Applied")
                 .appliedAt(LocalDateTime.now())
                 .build();
 
