@@ -161,6 +161,102 @@ None.
 
 `401 Unauthorized` if there is no authenticated server session.
 
+### Get a persisted user profile
+
+**Request**
+
+```http
+GET /api/v1/users/{userId}
+```
+
+**Purpose**
+
+Returns the profile stored in the local CareerContact database for `userId`.
+Unlike `GET /api/v1/cc/security/me`, this endpoint returns the locally saved
+profile values.
+
+**Body**
+
+None.
+
+**Returns**
+
+`200 OK` with a `UserResponseModel` JSON object:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `userId` | string | Local user identifier, matching the Auth0 subject. |
+| `name` | string | Saved display name. |
+| `email` | string | Saved email address. |
+| `pictureUrl` | string | Saved profile picture URL, if present. |
+
+`404 Not Found` if no local user exists with the supplied `userId`.
+
+### Update a persisted user profile
+
+**Request**
+
+```http
+PUT /api/v1/users/{userId}
+Content-Type: application/json
+```
+
+For a browser session, include credentials:
+
+```js
+const currentUser = await fetch("http://localhost:8080/api/v1/cc/security/me", {
+  credentials: "include"
+}).then(async response => {
+  if (!response.ok) {
+    throw new Error(`Failed to fetch current user: ${response.status}`);
+  }
+  return response.json();
+});
+
+const updatedUser = await fetch(
+  `http://localhost:8080/api/v1/users/${encodeURIComponent(currentUser.userId)}`,
+  {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    credentials: "include",
+    body: JSON.stringify({
+      name: "Updated Name",
+      email: "updated@example.com",
+      password: "new-password"
+    })
+  }
+).then(async response => {
+  if (!response.ok) {
+    throw new Error(`Failed to update user: ${response.status} ${await response.text()}`);
+  }
+  return response.json();
+});
+```
+
+**Purpose**
+
+Updates the locally persisted name and email for `userId`.
+
+**Body**
+
+A `UserUpdateRequestModel` JSON object:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `name` | string | Yes | New display name. Must not be blank. |
+| `email` | string | Yes | New email address. Must not be blank. |
+| `password` | string | No | Accepted for compatibility with the profile request. It is not stored locally; authentication credentials remain managed by Auth0. |
+
+**Returns**
+
+`200 OK` with the updated `UserResponseModel` JSON object described above.
+
+`400 Bad Request` if `name` or `email` is missing or blank.
+
+`404 Not Found` if no local user exists with the supplied `userId`.
+
 ## User and account endpoints
 
 ### Get user information
@@ -249,6 +345,78 @@ None.
 
 `200 OK` with an empty response body, or `500 Internal Server Error` if the
 Auth0 deletion fails. This endpoint does not return JSON.
+
+## Job posting endpoints
+
+### Apply to a job posting
+
+**Request**
+
+```http
+POST /api/v1/job-postings/{jobId}/apply
+Content-Type: application/json
+```
+
+For a browser session, include credentials:
+
+```js
+const response = await fetch(
+  "http://localhost:8080/api/v1/job-postings/1/apply",
+  {
+    method: "POST",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "Accept": "application/json"
+    },
+    body: JSON.stringify({})
+  }
+);
+```
+
+**Purpose**
+
+Creates a job application for the currently authenticated user. The
+authenticated user's Auth0 subject is used as the applicant; it is not
+provided in the request body.
+
+**Body**
+
+The body is optional. To apply with a specific resume, provide its ID:
+
+```json
+{
+  "resumeId": 1
+}
+```
+
+If `resumeId` is omitted, the user's most recently uploaded resume is used.
+The user must have at least one resume, and a user can only apply with a
+resume that belongs to them.
+
+**Returns**
+
+`201 Created` with a `JobApplicationResponseModel` JSON object:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | integer | Created application ID. |
+| `jobPostingId` | integer | ID of the job posting. |
+| `userId` | string | Auth0 subject of the applicant. |
+| `resumeId` | integer | Resume submitted with the application. |
+| `status` | string | Initial application status, currently `SUBMITTED`. |
+| `appliedAt` | string | Application timestamp in ISO-8601 format. |
+
+Possible errors:
+
+| Status | Description |
+| --- | --- |
+| `400 Bad Request` | The user has no resume and no resume can be selected. |
+| `400 Bad Request` | The deadline for the job posting has passed. |
+| `401 Unauthorized` | No authenticated browser session was supplied. |
+| `403 Forbidden` | The selected resume belongs to another user. |
+| `404 Not Found` | The job posting or selected resume does not exist. |
+| `409 Conflict` | The user has already applied to the job posting. |
 
 ## Current security behavior
 

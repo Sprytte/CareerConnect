@@ -6,9 +6,12 @@ import com.example.careercontactapi.UserManagement.datamapperlayer.UserRequestMa
 import com.example.careercontactapi.UserManagement.datamapperlayer.UserResponseMapper;
 import com.example.careercontactapi.UserManagement.presentationlayer.UserRequestModel;
 import com.example.careercontactapi.UserManagement.presentationlayer.UserResponseModel;
+import com.example.careercontactapi.UserManagement.presentationlayer.UserUpdateRequestModel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @Slf4j
@@ -29,8 +32,45 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public UserResponseModel getUser(String userId) {
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User with userId: " + userId + " not found"
+                ));
+
+        return userResponseMapper.entityToResponseModel(user);
+    }
+
+    @Override
+    public UserResponseModel updateUser(String userId, UserUpdateRequestModel userUpdateRequestModel) {
+        if (userUpdateRequestModel == null
+                || isBlank(userUpdateRequestModel.getName())
+                || isBlank(userUpdateRequestModel.getEmail())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Name and email are required"
+            );
+        }
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User with userId: " + userId + " not found"
+                ));
+
+        user.setName(userUpdateRequestModel.getName().trim());
+        user.setEmail(userUpdateRequestModel.getEmail().trim());
+
+        return userResponseMapper.entityToResponseModel(userRepository.save(user));
+    }
+
+    @Override
     public boolean userExists(String userId) {
         return userRepository.existsByUserId(userId);
     }
 
+    private boolean isBlank(String value) {
+        return value == null || value.isBlank();
+    }
 }
