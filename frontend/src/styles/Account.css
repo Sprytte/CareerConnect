@@ -386,3 +386,9 @@
     transition: none;
   }
 }
+.account-password-fields {
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+}

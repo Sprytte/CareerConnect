@@ -7,6 +7,7 @@ import SiteFooter from './SiteFooter'
 import {
   loadProfile,
   saveProfile,
+  savePassword,
   ProfileError,
   profileErrorMessage,
 } from '../profile/profileApi'
@@ -89,7 +90,7 @@ function ProfileEditor({ initial }: { initial: AccountProfile }) {
         name: saved.name || saved.email || 'Account',
         email: saved.email,
       })
-      setFeedback({ kind: 'success', message: 'Your name has been updated.' })
+      setFeedback({ kind: 'success', message: 'Your profile has been updated.' })
     } catch (error) {
       if (controller.signal.aborted) return
       setFeedback({
@@ -126,8 +127,7 @@ function ProfileEditor({ initial }: { initial: AccountProfile }) {
         </div>
       </div>
       <p className="account-availability">
-        Name changes are currently unavailable for Google sign-in. Email changes
-        are coming soon.
+        Update the name and contact email on your CareerConnect profile.
       </p>
       <form onSubmit={handleSave} noValidate aria-busy={saving}>
         <fieldset
@@ -177,8 +177,7 @@ function ProfileEditor({ initial }: { initial: AccountProfile }) {
               aria-describedby={`account-email-hint${errors.email ? ' account-email-error' : ''}`}
             />
             <p className="account-field-hint" id="account-email-hint">
-              Your current sign-in email stays in use until email changes become
-              available.
+              Your sign-in email is managed separately by your sign-in provider.
             </p>
             {errors.email && (
               <p className="account-field-error" id="account-email-error">
@@ -221,7 +220,7 @@ function ProfileEditor({ initial }: { initial: AccountProfile }) {
           </button>
           <span className="account-form-note">
             {saving
-              ? 'Please wait while we save your name.'
+              ? 'Please wait while we save your profile.'
               : changed
                 ? 'You have unsaved changes.'
                 : 'Your details are up to date.'}
@@ -232,7 +231,7 @@ function ProfileEditor({ initial }: { initial: AccountProfile }) {
   )
 }
 
-function PasswordEditor() {
+function PasswordEditor({ userId }: { userId: string }) {
   const [password, setPassword] = useState('')
   const [confirmation, setConfirmation] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -241,11 +240,17 @@ function PasswordEditor() {
     confirmation?: string
   }>({})
   const [message, setMessage] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [failure, setFailure] = useState<Feedback>(null)
+  const request = useRef<AbortController | null>(null)
   const passwordInput = useRef<HTMLInputElement>(null)
   const confirmationInput = useRef<HTMLInputElement>(null)
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  useEffect(() => () => request.current?.abort(), [])
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (request.current) return
     const validation: { password?: string; confirmation?: string } = {}
     if (!password) validation.password = 'Enter a new password.'
     else if (password.length < MIN_PASSWORD_LENGTH)
@@ -255,19 +260,27 @@ function PasswordEditor() {
       validation.confirmation = 'The passwords do not match.'
     setErrors(validation)
     setMessage('')
+    setFailure(null)
     if (validation.password || validation.confirmation) {
       if (validation.password) passwordInput.current?.focus()
       else confirmationInput.current?.focus()
       return
     }
-    // No password-update contract exists in the supplied backend. Keep this
-    // interface reviewable without transmitting or claiming to save a password.
-    setMessage(
-      'Password changes are not available yet. Your password has not changed.',
-    )
-    setPassword('')
-    setConfirmation('')
-    setShowPassword(false)
+    const controller = new AbortController()
+    request.current = controller
+    setSaving(true)
+    try {
+      await savePassword(userId, password, controller.signal)
+      if (controller.signal.aborted) return
+      setMessage('Your password has been changed. Sign in again with your new password.')
+      setPassword('')
+      setConfirmation('')
+      setShowPassword(false)
+    } catch (error) {
+      if (!controller.signal.aborted) setFailure({ kind: 'error', message: profileErrorMessage(error), sessionExpired: error instanceof ProfileError && error.sessionExpired })
+    } finally {
+      if (!controller.signal.aborted) { request.current = null; setSaving(false) }
+    }
   }
 
   function clear() {
@@ -276,7 +289,15 @@ function PasswordEditor() {
     setShowPassword(false)
     setErrors({})
     setMessage('')
+    setFailure(null)
   }
+
+  if (!userId.startsWith('auth0|')) return (
+    <section className="account-card" aria-labelledby="password-title">
+      <h2 id="password-title">Password settings</h2>
+      <p>Your account uses an external sign-in provider. Change your password through that provider.</p>
+    </section>
+  )
 
   return (
     <section className="account-card" aria-labelledby="password-title">
@@ -288,17 +309,17 @@ function PasswordEditor() {
           <h2 id="password-title">Change password</h2>
           <p>Choose a new password and confirm it.</p>
         </div>
-        <span className="account-badge">Coming soon</span>
       </div>
       <p className="account-availability" id="password-availability">
-        Password updates are not available yet. You can check your password
-        length and confirmation.
+        Use at least 15 characters. Your sign-in provider may require additional complexity.
       </p>
       <form
         onSubmit={handleSubmit}
         noValidate
         aria-describedby="password-availability"
       >
+        <fieldset className="account-password-fields" disabled={saving || failure?.sessionExpired || Boolean(message)}>
+        <legend className="account-sr-only">Change password</legend>
         <div className="account-password-grid">
           <div className="account-field">
             <label htmlFor="account-password">New password</label>
@@ -377,16 +398,18 @@ function PasswordEditor() {
           />
           Show passwords
         </label>
+        </fieldset>
         {message && (
-          <p className="account-feedback account-feedback-error" role="alert">
-            {message}
+          <p className="account-feedback account-feedback-success" role="status">
+            {message} <a className="account-inline-link" href={loginUrl}>Sign in</a>
           </p>
         )}
+        {failure && <p className="account-feedback account-feedback-error" role="alert">{failure.message}{failure.sessionExpired && <a className="account-inline-link" href={loginUrl}>Sign in again</a>}</p>}
         <div className="account-form-actions">
-          <button className="account-secondary" type="submit">
-            Check password fields
+          <button className="account-secondary" type="submit" disabled={saving || failure?.sessionExpired || Boolean(message)}>
+            {saving ? 'Changing…' : 'Change password'}
           </button>
-          <button className="account-text-button" type="button" onClick={clear}>
+          <button className="account-text-button" type="button" onClick={clear} disabled={saving || failure?.sessionExpired}>
             Clear
           </button>
         </div>
@@ -453,7 +476,7 @@ function ProfileLoader({ userId }: { userId: string }) {
   return (
     <>
       <ProfileEditor initial={loaded.profile} />
-      <PasswordEditor />
+      <PasswordEditor userId={loaded.profile.userId} />
     </>
   )
 }

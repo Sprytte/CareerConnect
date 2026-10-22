@@ -34,17 +34,17 @@ public class Auth0LoginService {
 
     public ResponseEntity<Void> getVoidResponseEntity(@AuthenticationPrincipal OidcUser principal) {
         HttpHeaders headers = new HttpHeaders();
-        log.info("TEOKEN: " + principal.getIdToken().toString());
         OAuth2AuthenticationToken authentication = (OAuth2AuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         String formattedDomain = getFormattedDomain();
 
-        // TODO .httpOnly should be true, but this was my janky solution
-        //  a lot of the stuff here is janky...
-        ResponseCookie cookie = ResponseCookie.from("id_token",getToken(authentication, principal.getIdToken()))
-                .httpOnly(false)
+        // Authentication uses the server session. Remove the legacy token cookie
+        // instead of exposing an ID token to browser scripts.
+        ResponseCookie cookie = ResponseCookie.from("id_token", "")
+                .httpOnly(true)
                 .secure(true)
                 .domain(formattedDomain)
                 .path("/")
+                .maxAge(0)
                 .sameSite("None")
                 .build();
         ResponseCookie authCookie = ResponseCookie.from("isAuthenticated", "true")

@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 @Service
 @Slf4j
@@ -53,6 +54,13 @@ public class UserServiceImpl implements UserService {
             );
         }
 
+        if (!userUpdateRequestModel.getEmail().trim().matches("^[^\\s@]+@[^\\s@]+$")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Enter a valid email address");
+        }
+        if (userUpdateRequestModel.getPassword() != null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Use the separate password endpoint");
+        }
+
         User user = userRepository.findByUserId(userId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -62,7 +70,11 @@ public class UserServiceImpl implements UserService {
         user.setName(userUpdateRequestModel.getName().trim());
         user.setEmail(userUpdateRequestModel.getEmail().trim());
 
-        return userResponseMapper.entityToResponseModel(userRepository.save(user));
+        try {
+            return userResponseMapper.entityToResponseModel(userRepository.saveAndFlush(user));
+        } catch (DataIntegrityViolationException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
+        }
     }
 
     @Override

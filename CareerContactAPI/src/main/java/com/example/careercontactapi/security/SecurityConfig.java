@@ -89,7 +89,7 @@ public class SecurityConfig {
                             .addLogoutHandler(logoutHandler())
                             .logoutSuccessHandler((request, response, authentication) -> {
 
-                                Arrays.stream(request.getCookies()).toList().forEach(cookie -> {
+                                Arrays.stream(request.getCookies() == null ? new Cookie[0] : request.getCookies()).toList().forEach(cookie -> {
                                     if (!cookie.getName().equals("JSESSIONID")) {
                                         Cookie newCookie = new Cookie(cookie.getName(), "");
                                         newCookie.setMaxAge(0);
@@ -182,7 +182,7 @@ public class SecurityConfig {
 
     private LogoutHandler logoutHandler() {
         return (request, response, authentication) -> {
-            List<Cookie> cookies = List.of(request.getCookies());
+            List<Cookie> cookies = request.getCookies() == null ? List.of() : Arrays.asList(request.getCookies());
 
             cookies.forEach(cookie -> {
                 if (!cookie.getName().equals("JSESSIONID")) {

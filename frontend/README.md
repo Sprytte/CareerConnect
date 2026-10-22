@@ -1,98 +1,68 @@
 # CareerConnect frontend
 
-React, TypeScript, Vite, React Router, and the project's existing CSS styles.
+React, TypeScript, and Vite. Install dependencies with `npm ci`, then use
+`npm run dev` from this directory. The local frontend runs on port 3000 and
+uses `VITE_BACKEND_URL` or `http://localhost:8080` for the backend.
 
-## Local setup
+## Routes and integration
 
-From the repository root in PowerShell:
-
-```powershell
-cd frontend
-npm ci
-npm run dev
-```
-
-Open `http://localhost:3000`. Run the Spring Boot backend on port 8080 in a
-second terminal. Auth0 configuration stays on the backend. To override the
-backend origin, set `VITE_BACKEND_URL` in an untracked `frontend/.env.local`
-file and restart Vite.
-
-## Routes
-
-| Route | Purpose |
+| Route | Feature |
 | --- | --- |
-| `/` | Welcome page and sign-in navigation. |
-| `/account` | Signed-in profile editor; name updates and account-update dependency handling. |
-| `/account/resume` | Existing resume component. |
+| `/` | Welcome page and shared sign-in header |
+| `/account/resume` | Resume management |
+| `/account` | Profile editor from PR #64 |
+| `/account/applications` | Application-status list from PR #70 |
 
-The shared header links to `/account` after the backend verifies the session.
-The account page links to the existing resume page.
+The last two routes are added by their respective PRs; both are present after
+combining those branches. The backend being run must include the corresponding
+integration changes. Existing local Auth0 configuration is still required for
+real sign-in. Frontend code contains no client secret.
 
-## Authentication and profile data
+`SessionProvider` checks `GET /api/v1/cc/security/me` with credentials. Signed-out,
+unavailable, and loading states are handled separately. Fresh saved profile
+values update the shared header greeting. Account authorization is enforced on
+the server, including the profile and application-list routes.
 
-`SessionProvider` calls `GET /api/v1/cc/security/me` with
-`credentials: 'include'`. This endpoint is implemented in `SecurityController`;
-it returns `userId`, `name`, `email`, and `picture`, or 401 when signed out.
-It does not return roles. The backend owns the Auth0 OAuth2 login flow.
+## Profile editor (#64)
 
-After verifying the session, `/account` loads the latest Auth0 profile using
-`GET /api/v1/cc/security/user-info/{userId}`. The user ID comes from `/me`,
-not from editable input, a URL query, or a readable authentication cookie.
-The path identifier is URL-encoded. Fresh profile data updates the shared
-header greeting while the frontend is open.
+The profile loads and saves name/contact email at `/api/v1/users/{userId}`.
+These database fields are separate from the provider's sign-in email. The backend
+checks ownership and validation, and `/me` reads saved values after a reload.
+The interface validates server confirmation rather than assuming any 2xx is success.
 
-`PATCH /api/v1/cc/security/user-info/{userId}` currently forwards **only name**
-to Auth0.
-The editor sends only `{ "name": "Updated Name" }` and checks the returned
-identity, name, and email before displaying success. Empty or invalid success
-responses, ignored updates, HTTP failures, and network failures show errors.
-Cancel restores the last server-confirmed values. Repeated submissions are
-blocked while a request is pending.
+Auth0 database accounts can confirm and change their password through the separate
+`PUT /api/v1/users/{userId}/password` route. The server enforces the 15-character
+minimum; Auth0 may require additional complexity. Success invalidates the local
+session. Google and other external-provider accounts use their provider's password
+settings instead. Passwords are not stored in browser storage or the local database.
 
-## Issue #32 dependencies
+See `../docs/Sprint2-Issue32-Handoff.md` for the remaining live checks.
 
-Live testing with Google sign-in confirmed that Auth0 rejects name changes with
-HTTP 400 and `operation_not_supported` under the current connection sync policy.
-The backend maps this error into empty profile fields and returns 201, which the
-frontend correctly rejects. Successful name persistence needs the backend and
-connection-policy fix described in `docs/Sprint2-Issue32-Handoff.md`.
+## Application statuses (#70)
 
-The requested email and password changes are **not implemented by the supplied
-backend**. A changed email is rejected before sending a PATCH, preventing a
-partial name save. The password form checks required fields, the 15-character
-minimum requested in the PR review, and matching confirmation. It transmits no
-password and does not claim to update it.
-These limitations are explicit in the UI. They must be resolved before #32
-can be considered complete. See `docs/Sprint2-Issue32-Handoff.md`.
+The interface loads `GET /api/v1/account/applications` using the signed-in account.
+It displays the four required labels, status filters/counts, refresh, and appropriate
+loading, empty, session, and error states. Unknown statuses are shown neutrally.
+Legacy SUBMITTED/Offer/Reject values are mapped at the server boundary. No sample
+application records or guessed endpoints are used in production.
 
-The patch also corrects `SecurityConfig` to allow PATCH as an HTTP method,
-rather than adding a header named PATCH. Restart the backend after applying it.
-Existing ownership checks on the profile endpoints and stale `/me` claims
-remain backend handoff items; a frontend session gate is not server authorization.
+See `../docs/Sprint2-Issue44-Handoff.md` for the contract and live checks. The
+recruiter's status-update workflow remains in separate PR #74.
 
-## Checks
+## Validation
 
-```powershell
-npm run build
-npm run lint
-```
+Run `npm run build` for TypeScript and a production build. Lint the changed feature
+files with the commands in the integration package. Full `npm run lint` still
+reports the existing effect error in `src/components/Resume.tsx` on this main base.
 
-The production build and changed-file lint checks passed for this patch.
-Project-wide lint still reports the pre-existing
-`react-hooks/set-state-in-effect` error in `src/components/Resume.tsx`.
-It was also reproduced against the original uploaded file.
+The package includes a reproducible browser harness using controlled API responses,
+plus the result summary. The backend includes controller, service, HTTP-adapter,
+and SQLite tests. These checks supplement the live sign-in and persistence checks;
+they do not establish that a particular Auth0 tenant is configured correctly.
 
-Twenty-six browser scenarios passed after the review update with intercepted, synthetic account API
-responses. The change package includes the harness and results. This verifies
-frontend behavior; it does not establish that live Auth0 updates work. Local
-Windows checks subsequently confirmed frontend build and changed-file lint, Java
-compilation with JDK 17, backend startup, and authenticated profile loading. Name
-persistence remains blocked as described above. Backend tests and live
-email/password integration remain pending.
+## Development notes
 
-## Files
-
-`src/components/Account.tsx` owns the account page and form states.
-`src/profile/profileApi.ts` owns profile requests and response checks.
-`src/styles/Account.css` contains account layout and responsive styles.
-`src/auth/session.ts` and `SessionProvider.tsx` share authenticated user state.
+Shared document styles are in `src/styles/index.css`, shared shell/welcome styles
+in `src/styles/App.css`, and feature styles in `Account.css` and `Applications.css`.
+Stop Vite with Ctrl+C before running another server on port 3000. Keep local runtime
+files, database changes, and configuration secrets out of feature commits.

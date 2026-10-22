@@ -215,9 +215,10 @@ public class Auth0ManagementService {
     public String getAccessToken() throws IOException, InterruptedException {
         log.info("Getting Access Token");
 
-        HttpClient client = HttpClient.newHttpClient();
+        HttpClient client = HttpClient.newBuilder().connectTimeout(java.time.Duration.ofSeconds(10)).build();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(issuer + "oauth/token"))
+                .timeout(java.time.Duration.ofSeconds(20))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(
                         "{\"client_id\":\"" + clientId + "\",\"client_secret\":\"" + clientSecret + "\",\"audience\":\"" + issuer + "api/v2/\",\"grant_type\":\"client_credentials\"}"))
@@ -227,7 +228,7 @@ public class Auth0ManagementService {
 
         if (response.statusCode() < 200 || response.statusCode() >= 300) {
             throw new IOException("Auth0 Management API token request failed (" +
-                    response.statusCode() + "): " + response.body());
+                    response.statusCode() + ")");
         }
 
         String accessToken = extractToken(response.body());

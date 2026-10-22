@@ -141,7 +141,9 @@ const response = await fetch("http://localhost:8080/api/v1/cc/security/me", {
 **Purpose**
 
 Returns the user associated with the currently authenticated server session.
-The endpoint does not require a `userId` path parameter.
+The endpoint does not require a `userId` path parameter. After profile integration
+(PR #64), name, contact email, and picture come from the persisted database
+profile so old login claims do not overwrite saved changes.
 
 **Body**
 
@@ -172,8 +174,8 @@ GET /api/v1/users/{userId}
 **Purpose**
 
 Returns the profile stored in the local CareerContact database for `userId`.
-Unlike `GET /api/v1/cc/security/me`, this endpoint returns the locally saved
-profile values.
+The authenticated subject must match `userId`: no session returns 401 and a
+different account returns 403. `/me` reads the same persisted profile values.
 
 **Body**
 
@@ -223,8 +225,7 @@ const updatedUser = await fetch(
     credentials: "include",
     body: JSON.stringify({
       name: "Updated Name",
-      email: "updated@example.com",
-      password: "new-password"
+      email: "updated@example.com"
     })
   }
 ).then(async response => {
@@ -237,7 +238,9 @@ const updatedUser = await fetch(
 
 **Purpose**
 
-Updates the locally persisted name and email for `userId`.
+Updates the locally persisted name and contact email for the authenticated
+account. This does not change the provider-managed sign-in email. No session
+returns 401 and a different account returns 403.
 
 **Body**
 
@@ -247,15 +250,39 @@ A `UserUpdateRequestModel` JSON object:
 | --- | --- | --- | --- |
 | `name` | string | Yes | New display name. Must not be blank. |
 | `email` | string | Yes | New email address. Must not be blank. |
-| `password` | string | No | Accepted for compatibility with the profile request. It is not stored locally; authentication credentials remain managed by Auth0. |
+| `password` | string | No | Rejected here. Use the separate password endpoint below. |
 
 **Returns**
 
 `200 OK` with the updated `UserResponseModel` JSON object described above.
 
-`400 Bad Request` if `name` or `email` is missing or blank.
+`400 Bad Request` if name/email is invalid or a password field is supplied.
+`409 Conflict` if the contact email is already in use.
 
 `404 Not Found` if no local user exists with the supplied `userId`.
+
+### Change the authenticated account password
+
+```http
+PUT /api/v1/users/{userId}/password
+Content-Type: application/json
+
+{"password":"a-new-password-meeting-the-provider-policy"}
+```
+
+Requires the matching signed-in OIDC subject. This endpoint supports primary
+Auth0 database identities (`auth0|...`); external-provider identities return
+409 and must use that provider's password settings. The server enforces a
+15-character minimum, uses the existing Auth0 Management API credentials,
+checks the upstream response, and returns 204 only after confirmation. The
+current local session is invalidated on success. The password is never stored
+in the local database or returned in the response.
+
+Errors: 400 for length/provider-policy rejection, 401 without a session, 403
+for a different account, 409 for external-provider accounts, and 502 for an
+unavailable/misconfigured upstream service or invalid confirmation. Upstream
+response bodies and credentials are not exposed. Live tenant permissions and
+password policy still need to be checked with a disposable test account.
 
 ## User and account endpoints
 
@@ -322,8 +349,10 @@ A `UserRequestModel` JSON object:
 `201 Created` with the updated `UserInfoResponseModel` JSON object described
 above. The current service can also return null or incomplete profile data
 after an Auth0 failure while the controller still returns 201. Consumers must
-not treat the status code alone as confirmation of a saved update. No password
-field or user-password update endpoint is implemented in this snapshot.
+not treat the status code alone as confirmation of a saved update. The account
+interface now uses the persisted `/api/v1/users` routes and separate password
+endpoint instead. Legacy user-info reads, writes, and account deletion require
+matching ownership; employee administration requires the verified Admin claim.
 
 ### Delete a user account
 
@@ -428,13 +457,17 @@ CareerContactAPI/src/main/java/com/example/careercontactapi/security/SecurityCon
 CareerContactAPI/src/main/java/com/example/careercontactapi/security/service/Auth0LoginService.java
 ```
 
-At present, `SecurityConfig` uses `.anyRequest().permitAll()`, and several
-controller-level authentication checks are commented out. Consequently, most
-custom API endpoints are currently reachable without an authenticated session
-unless another configuration or deployment layer restricts them. The
-`GET /api/v1/cc/security/me` endpoint is an exception and explicitly requires
-an authenticated session. JWT validation is configured, but it is not the same
-as requiring authentication on every route.
+The global fallback in `SecurityConfig` remains `.anyRequest().permitAll()`.
+Controllers must therefore enforce their own authentication and ownership checks.
+Applying to a posting and recruiter-owned lists already do so on main. The
+profile/password integration in PR #64 and the job-seeker list in PR #70 add
+checks to their respective routes. `/me` also requires an authenticated session.
+
+Public job-posting reads are intentional. Job-posting PUT/DELETE on the reviewed
+main base still need ownership checks; resume authorization is covered by the
+separate open PR #73. JWT validation alone does not require authentication on
+every route. Read each endpoint's authorization rules rather than treating a
+successful JWT configuration as evidence that all routes are protected.
 
 If Spring Security rejects a request as unauthenticated, its configured JSON
 error response has this field:

@@ -7,6 +7,7 @@ import com.example.careercontactapi.security.usermodels.EmployeeResponseModel;
 import com.example.careercontactapi.security.usermodels.UserInfoResponseModel;
 import com.example.careercontactapi.UserManagement.businesslayer.UserService;
 import com.example.careercontactapi.UserManagement.presentationlayer.UserRequestModel;
+import org.springframework.web.server.ResponseStatusException;
 import lombok.AllArgsConstructor;
 import lombok.Generated;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +60,9 @@ public class SecurityController {
             UserRequestModel userRequestModel = UserRequestModel.builder()
                     .userId(principal.getSubject())
                     .email(principal.getEmail())
-                    .name(principal.getName())
+                    .name(principal.getClaimAsString("name") == null || principal.getClaimAsString("name").isBlank()
+                            ? (principal.getEmail() == null ? "Account" : principal.getEmail())
+                            : principal.getClaimAsString("name"))
                     .pictureUrl(principal.getClaim("picture"))
                     .build();
             userService.addUser(userRequestModel);
@@ -99,16 +102,18 @@ public class SecurityController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return ResponseEntity.ok(UserInfoResponseModel.builder()
+        var profile = userService.getUser(principal.getSubject());
+        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore()).body(UserInfoResponseModel.builder()
                 .userId(principal.getSubject())
-                .email(principal.getEmail())
-                .name(principal.getClaimAsString("name"))
-                .picture(principal.getClaimAsString("picture"))
+                .email(profile.getEmail())
+                .name(profile.getName())
+                .picture(profile.getPictureUrl())
                 .build());
     }
 
     @GetMapping("/user-info/{userId}")
-    public ResponseEntity<UserInfoResponseModel> getUserInfo(/*@AuthenticationPrincipal OidcUser principal, */@PathVariable String userId) throws IOException, InterruptedException {
+    public ResponseEntity<UserInfoResponseModel> getUserInfo(@AuthenticationPrincipal OidcUser principal, @PathVariable String userId) throws IOException, InterruptedException {
+        requireProfileOwner(principal, userId);
 //        if(principal == null)
 //            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 //
@@ -118,7 +123,8 @@ public class SecurityController {
         return ResponseEntity.ok().body(auth0ManagementService.getUserInfo(userId));
     }
     @PatchMapping("/user-info/{userId}")
-    public ResponseEntity<UserInfoResponseModel> updateUserInfo(/*@AuthenticationPrincipal OidcUser principal,*/@PathVariable String userId, @RequestBody UserRequestModel userRequestModel) throws IOException, InterruptedException {
+    public ResponseEntity<UserInfoResponseModel> updateUserInfo(@AuthenticationPrincipal OidcUser principal, @PathVariable String userId, @RequestBody UserRequestModel userRequestModel) throws IOException, InterruptedException {
+        requireProfileOwner(principal, userId);
 //        if(principal == null)
 //            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
@@ -126,8 +132,14 @@ public class SecurityController {
         return ResponseEntity.status(HttpStatus.CREATED).body(auth0ManagementService.updateUserInfo(userRequestModel, userId));
     }
 
+    private void requireProfileOwner(OidcUser principal, String userId) {
+        if (principal == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        if (!principal.getSubject().equals(userId)) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
+    }
+
     @PostMapping("/employees")
-    public ResponseEntity<UserInfoResponseModel> addReviewEmployee(/*@AuthenticationPrincipal OidcUser principal,*/ @RequestBody EmployeeRequestModel employeeRequestModel) throws IOException, InterruptedException {
+    public ResponseEntity<UserInfoResponseModel> addReviewEmployee(@AuthenticationPrincipal OidcUser principal, @RequestBody EmployeeRequestModel employeeRequestModel) throws IOException, InterruptedException {
+        requireAdmin(principal);
         log.info("Is inside the employees controller");
 //        if(principal == null)
 //            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -137,7 +149,8 @@ public class SecurityController {
     }
 
     @PatchMapping("/employees/{userId}")
-    public ResponseEntity<UserInfoResponseModel> updateReviewEmployee(/*@AuthenticationPrincipal OidcUser principal,*/@PathVariable String userId, @RequestBody EmployeeRequestModel employeeRequestModel) throws IOException, InterruptedException {
+    public ResponseEntity<UserInfoResponseModel> updateReviewEmployee(@AuthenticationPrincipal OidcUser principal, @PathVariable String userId, @RequestBody EmployeeRequestModel employeeRequestModel) throws IOException, InterruptedException {
+        requireAdmin(principal);
         log.info("Is inside the employees controller");
 //        if(principal == null)
 //            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -147,7 +160,8 @@ public class SecurityController {
     }
 
     @GetMapping("/employees")
-    public ResponseEntity<List<EmployeeResponseModel>> getReviewEmployees(/*@AuthenticationPrincipal OidcUser principal*/) throws IOException, InterruptedException {
+    public ResponseEntity<List<EmployeeResponseModel>> getReviewEmployees(@AuthenticationPrincipal OidcUser principal) throws IOException, InterruptedException {
+        requireAdmin(principal);
         log.info("Is inside the employees controller");
 //        if(principal == null)
 //            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -157,13 +171,20 @@ public class SecurityController {
     }
 
     @DeleteMapping("/deleteAccount/users/{userId}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable String userId) {
+    public ResponseEntity<Void> deleteAccount(@PathVariable String userId, @AuthenticationPrincipal OidcUser principal) {
+        requireProfileOwner(principal, userId);
         try {
             auth0ManagementService.deleteUser(userId);
             return ResponseEntity.ok().build();
         } catch (IOException | InterruptedException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    private void requireAdmin(OidcUser principal) {
+        if (principal == null) throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        List<String> roles = principal.getClaimAsStringList("https://careercontact/roles");
+        if (roles == null || !roles.contains("Admin")) throw new ResponseStatusException(HttpStatus.FORBIDDEN);
     }
 
 
