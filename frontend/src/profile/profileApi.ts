@@ -17,7 +17,7 @@ export class ProfileError extends Error {
 }
 
 function profileUrl(userId: string): string {
-  return `${backendUrl}/api/v1/cc/security/user-info/${encodeURIComponent(userId)}`
+  return `${backendUrl}/api/v1/users/${encodeURIComponent(userId)}`
 }
 
 async function readProfile(
@@ -32,6 +32,9 @@ async function readProfile(
   }
   if (response.status === 403) {
     throw new ProfileError('You do not have permission to access this account.')
+  }
+  if (response.status === 409) {
+    throw new ProfileError('This email address is already in use. Try another address.')
   }
   if (!response.ok) {
     throw new ProfileError(
@@ -58,13 +61,14 @@ async function readProfile(
   if (
     profile.userId !== userId ||
     typeof profile.name !== 'string' ||
-    typeof profile.email !== 'string'
+    typeof profile.email !== 'string' ||
+    !profile.name.trim() || !profile.email.trim()
   ) {
     throw new ProfileError(
       'We could not confirm your account details. Please try again.',
     )
   }
-  return { userId, name: profile.name, email: profile.email }
+  return { userId, name: profile.name.trim(), email: profile.email.trim() }
 }
 
 export async function loadProfile(
@@ -85,27 +89,33 @@ export async function saveProfile(
   changes: Pick<AccountProfile, 'name' | 'email'>,
   signal: AbortSignal,
 ): Promise<AccountProfile> {
-  // At snapshot 0eed6e6 the backend forwards ONLY name to Auth0. Never send an
-  // unsupported email change and then mistake the ignored field for success.
-  if (changes.email !== current.email) {
-    throw new ProfileError(
-      'Email changes are not available yet. Keep your current email to save your name.',
-    )
-  }
   const response = await fetch(profileUrl(current.userId), {
-    method: 'PATCH',
+    method: 'PUT',
     credentials: 'include',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: changes.name }),
+    body: JSON.stringify({ name: changes.name, email: changes.email }),
     signal,
   })
   const saved = await readProfile(response, current.userId)
-  if (saved.name !== changes.name || saved.email !== current.email) {
+  if (saved.name !== changes.name || saved.email !== changes.email) {
     throw new ProfileError(
       'We could not confirm your changes. Reload your account details before trying again.',
     )
   }
   return saved
+}
+
+export async function savePassword(userId: string, password: string, signal: AbortSignal): Promise<void> {
+  const response = await fetch(`${profileUrl(userId)}/password`, {
+    method: 'PUT', credentials: 'include', signal,
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ password }),
+  })
+  if (response.status === 401) throw new ProfileError('Your session has expired. Sign in again to continue.', true)
+  if (response.status === 403) throw new ProfileError('You do not have permission to access this account.')
+  if (response.status === 400) throw new ProfileError('The password does not meet your sign-in provider’s policy. Use at least 15 characters and try another password.')
+  if (response.status === 409) throw new ProfileError('Change your password through your sign-in provider.')
+  if (response.status !== 204) throw new ProfileError('We could not confirm the password change. Please try again.')
 }
 
 export function profileErrorMessage(error: unknown): string {
