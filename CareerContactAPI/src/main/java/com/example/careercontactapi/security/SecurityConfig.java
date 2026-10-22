@@ -28,6 +28,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2TokenValidator;
@@ -79,7 +80,9 @@ public class SecurityConfig {
                     exceptionHandling.authenticationEntryPoint(authenticationEntryPoint());
                 })
                 .oauth2Login(httpSecurityOAuth2LoginConfigurer -> {
-                    httpSecurityOAuth2LoginConfigurer.loginPage("/login/oauth2/code/okta")
+                    httpSecurityOAuth2LoginConfigurer.loginPage("/oauth2/authorization/okta")
+                            .failureUrl(UriComponentsBuilder.fromUriString(frontendDomain)
+                                    .replacePath("/").replaceQuery("signin=failed").toUriString())
                             .defaultSuccessUrl(backendDomain + "api/v1/cc/security/redirect", true)
                             .permitAll();
                 })

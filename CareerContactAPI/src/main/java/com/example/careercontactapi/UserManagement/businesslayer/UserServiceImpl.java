@@ -2,6 +2,7 @@ package com.example.careercontactapi.UserManagement.businesslayer;
 //import com.example.cwcp.exceptions.NotFoundException;
 import com.example.careercontactapi.UserManagement.datalayer.User;
 import com.example.careercontactapi.UserManagement.datalayer.UserRepository;
+import com.example.careercontactapi.UserManagement.datalayer.UserConstraintViolations;
 import com.example.careercontactapi.UserManagement.datamapperlayer.UserRequestMapper;
 import com.example.careercontactapi.UserManagement.datamapperlayer.UserResponseMapper;
 import com.example.careercontactapi.UserManagement.presentationlayer.UserRequestModel;
@@ -12,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
 
 @Service
 @Slf4j
@@ -72,7 +73,10 @@ public class UserServiceImpl implements UserService {
 
         try {
             return userResponseMapper.entityToResponseModel(userRepository.saveAndFlush(user));
-        } catch (DataIntegrityViolationException e) {
+        } catch (DataAccessException e) {
+            if (!UserConstraintViolations.isUniqueViolation(e)) {
+                throw e;
+            }
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
         }
     }

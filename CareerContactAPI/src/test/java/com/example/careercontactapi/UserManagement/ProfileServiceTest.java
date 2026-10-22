@@ -6,6 +6,9 @@ import com.example.careercontactapi.UserManagement.datamapperlayer.*;
 import com.example.careercontactapi.UserManagement.presentationlayer.*;
 import org.junit.jupiter.api.*;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.jpa.JpaSystemException;
+import org.sqlite.SQLiteErrorCode;
+import org.sqlite.SQLiteException;
 import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
@@ -38,9 +41,30 @@ class ProfileServiceTest {
     @Test void duplicateEmailReturnsConflict() {
         var user = User.builder().userId("auth0|one").build();
         when(repository.findByUserId("auth0|one")).thenReturn(Optional.of(user));
-        when(repository.saveAndFlush(user)).thenThrow(new DataIntegrityViolationException("fixture constraint"));
+        when(repository.saveAndFlush(user)).thenThrow(new DataIntegrityViolationException("fixture constraint",
+                new SQLiteException("fixture unique constraint", SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE)));
         var error = assertThrows(ResponseStatusException.class,
                 () -> service.updateUser("auth0|one", new UserUpdateRequestModel("New", "taken@example.test", null)));
         assertEquals(409, error.getStatusCode().value());
+    }
+
+    @Test void sqliteUniqueViolationWrappedByJpaReturnsConflict() {
+        var user = User.builder().userId("auth0|one").build();
+        when(repository.findByUserId("auth0|one")).thenReturn(Optional.of(user));
+        when(repository.saveAndFlush(user)).thenThrow(new JpaSystemException(new RuntimeException(
+                new SQLiteException("fixture unique constraint", SQLiteErrorCode.SQLITE_CONSTRAINT_UNIQUE))));
+        var error = assertThrows(ResponseStatusException.class,
+                () -> service.updateUser("auth0|one", new UserUpdateRequestModel("New", "taken@example.test", null)));
+        assertEquals(409, error.getStatusCode().value());
+    }
+
+    @Test void unrelatedSqliteFailuresAreNotReportedAsDuplicateEmails() {
+        var user = User.builder().userId("auth0|one").build();
+        when(repository.findByUserId("auth0|one")).thenReturn(Optional.of(user));
+        var failure = new JpaSystemException(new RuntimeException(
+                new SQLiteException("fixture database busy", SQLiteErrorCode.SQLITE_BUSY)));
+        when(repository.saveAndFlush(user)).thenThrow(failure);
+        assertSame(failure, assertThrows(JpaSystemException.class,
+                () -> service.updateUser("auth0|one", new UserUpdateRequestModel("New", "new@example.test", null))));
     }
 }

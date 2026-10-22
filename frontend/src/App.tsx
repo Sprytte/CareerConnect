@@ -1,5 +1,7 @@
 import SiteHeader from './components/SiteHeader'
 import SiteFooter from './components/SiteFooter'
+import { useSearchParams } from 'react-router-dom'
+import { loginUrl, logoutUrl } from './auth/session'
 import './styles/App.css'
 
 // Static welcome-page content; these cards do not fetch account or resume data.
@@ -17,11 +19,30 @@ const features = [
 ]
 
 function App() {
+  const [searchParams] = useSearchParams()
+  const signInFailed = searchParams.get('signin') === 'failed'
+  const profileSetupFailed = searchParams.get('signin') === 'profile-unavailable'
+
   return (
     <div className="site-shell" id="top">
       <SiteHeader />
 
       <main>
+        {(signInFailed || profileSetupFailed) && (
+          <div className="sign-in-feedback" role="alert">
+            <p>{profileSetupFailed
+              ? 'Your profile couldn’t be created. If you have an account, use its original sign-in method. To create a separate account, use a different email address.'
+              : 'Sign-in didn’t finish. Please try again.'}</p>
+            {profileSetupFailed ? (
+              <form method="post" action={logoutUrl}>
+                <button type="submit">Sign out and try again</button>
+              </form>
+            ) : (
+              <a href={loginUrl}>Try signing in again</a>
+            )}
+          </div>
+        )}
+
         <section className="hero" aria-labelledby="hero-title">
           <div className="hero-copy">
             <div className="eyebrow">

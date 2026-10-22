@@ -7,6 +7,14 @@ import com.example.careercontactapi.security.usermodels.EmployeeResponseModel;
 import com.example.careercontactapi.security.usermodels.UserInfoResponseModel;
 import com.example.careercontactapi.UserManagement.businesslayer.UserService;
 import com.example.careercontactapi.UserManagement.presentationlayer.UserRequestModel;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.dao.DataAccessException;
+import com.example.careercontactapi.UserManagement.datalayer.UserConstraintViolations;
+import org.springframework.http.CacheControl;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.server.ResponseStatusException;
 import lombok.AllArgsConstructor;
 import lombok.Generated;
@@ -36,6 +44,9 @@ public class SecurityController {
     @Value("${backend.url}")
     private String backendDomain;
 
+    @Value("${frontend.url:http://localhost:3000}")
+    private String frontendDomain = "http://localhost:3000";
+
     public SecurityController(Auth0LoginService auth0LoginService, Auth0ManagementService auth0ManagementService, UserService userService,@Value("${backend.url}") String backendDomain) {
         this.auth0LoginService = auth0LoginService;
         this.auth0ManagementService = auth0ManagementService;
@@ -44,7 +55,9 @@ public class SecurityController {
     }
 
     @GetMapping("/redirect")
-    public ResponseEntity<Void> redirectAfterLogin(@AuthenticationPrincipal OidcUser principal) throws IOException, InterruptedException {
+    public ResponseEntity<Void> redirectAfterLogin(@AuthenticationPrincipal OidcUser principal,
+                                                  HttpServletRequest request,
+                                                  HttpServletResponse response) throws IOException, InterruptedException {
         if (principal == null) {
             log.info("Principal is null");
             return ResponseEntity.status(HttpStatus.FOUND)
@@ -65,7 +78,23 @@ public class SecurityController {
                             : principal.getClaimAsString("name"))
                     .pictureUrl(principal.getClaim("picture"))
                     .build();
-            userService.addUser(userRequestModel);
+            try {
+                userService.addUser(userRequestModel);
+            } catch (DataAccessException failure) {
+                if (!UserConstraintViolations.isUniqueViolation(failure)) {
+                    throw failure;
+                }
+                // A separate identity can have an email already used by a local
+                // profile. Never use that email to take over the existing row.
+                log.warn("Local profile creation failed after sign-in");
+                new SecurityContextLogoutHandler().logout(request, response,
+                        SecurityContextHolder.getContext().getAuthentication());
+                return ResponseEntity.status(HttpStatus.FOUND)
+                        .cacheControl(CacheControl.noStore())
+                        .location(UriComponentsBuilder.fromUriString(frontendDomain)
+                                .replacePath("/").replaceQuery("signin=profile-unavailable").build().toUri())
+                        .build();
+            }
             log.info("Added the customer with userId: {}", principal.getSubject());
         }
         /*if(!userService.userExists(principal.getSubject())){
