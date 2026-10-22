@@ -51,6 +51,23 @@ Before moving #64 out of draft locally verify:
 5. Review desktop/mobile screenshots and updated CI results. New commits may need
    renewed review even though the earlier draft was approved.
 
+## First sign-in and duplicate contact emails
+
+The local schema requires unique contact emails. Google and email/password
+sign-ins can represent different identities even when the email text matches.
+If the new identity cannot create its local profile, the login redirect clears
+the local session and returns to the welcome page with recovery instructions.
+It never assigns the existing profile to the new identity by matching email.
+The recovery button signs out through Auth0 so another sign-in method can be
+chosen. Use a different email for a separate disposable password-test account.
+
+`ProfileSignInTest` uses the actual SQLite initialization schema, including its
+email constraint, to check this rejection, separate-account creation, the
+preservation of edited details on a returning account, and duplicate-email
+updates returning 409 without changing either profile. Constraint handling
+checks SQLite's unique-violation code through exception causes, including
+Hibernate's `JpaSystemException` wrapper. Unrelated persistence errors propagate.
+
 ## Merge coordination
 
 #64 and #70 share `SiteHeader.tsx` and `main.tsx`. Keep both account links and both

@@ -110,6 +110,50 @@
   margin-left: 12px;
 }
 
+/* Sign-in failures return here so the user can start a fresh attempt. */
+.sign-in-feedback {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 90%;
+  max-width: 1150px;
+  margin: 24px auto 0;
+  padding: 16px 20px;
+  border: 1px solid #e1b85f;
+  border-radius: 10px;
+  background: #fff7e8;
+  color: #594422;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.sign-in-feedback p {
+  margin: 0;
+}
+
+.sign-in-feedback a,
+.sign-in-feedback button {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.sign-in-feedback form {
+  margin: 0;
+}
+
+.sign-in-feedback button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
 /* Hero and page actions. */
 .hero {
   position: relative;
