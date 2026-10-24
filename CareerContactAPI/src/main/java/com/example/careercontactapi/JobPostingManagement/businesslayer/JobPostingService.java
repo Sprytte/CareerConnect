@@ -17,11 +17,12 @@ public interface JobPostingService {
     JobPostingResponseModel getJobPostingById(Integer jobId);
 
     JobPostingResponseModel updateJobPosting(
-            Integer jobId,
-            JobPostingRequestModel jobPostingRequestModel
-    );
+        Integer jobId,
+        JobPostingRequestModel jobPostingRequestModel,
+        String userId
+);
 
-    void deleteJobPosting(Integer jobId);
+void deleteJobPosting(Integer jobId, String userId);
 
     List<JobPostingResponseModel> getJobPostingsByUserId(String userId);
 
