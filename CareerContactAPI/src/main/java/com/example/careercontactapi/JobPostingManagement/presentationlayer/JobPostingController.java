@@ -77,24 +77,44 @@ public class JobPostingController {
     }
 
     @PutMapping("/{jobId}")
-    public ResponseEntity<JobPostingResponseModel> updateJobPosting(
-            @PathVariable Integer jobId,
-            @RequestBody JobPostingRequestModel requestModel
-    ) {
-        return ResponseEntity.ok(
-                jobPostingService.updateJobPosting(jobId, requestModel)
-        );
+public ResponseEntity<JobPostingResponseModel> updateJobPosting(
+        @PathVariable Integer jobId,
+        @RequestBody JobPostingRequestModel requestModel,
+        @AuthenticationPrincipal OidcUser principal
+) {
+    if (principal == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
+
+    if (!isValidRequestModel(requestModel)) {
+        return ResponseEntity.badRequest().build();
+    }
+
+    return ResponseEntity.ok(
+            jobPostingService.updateJobPosting(
+                    jobId,
+                    requestModel,
+                    principal.getSubject()
+            )
+    );
+}
 
     @DeleteMapping("/{jobId}")
-    public ResponseEntity<Void> deleteJobPosting(
-            @PathVariable Integer jobId
-    ) {
-        jobPostingService.deleteJobPosting(jobId);
-
-        return ResponseEntity.noContent().build();
+public ResponseEntity<Void> deleteJobPosting(
+        @PathVariable Integer jobId,
+        @AuthenticationPrincipal OidcUser principal
+) {
+    if (principal == null) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
+    jobPostingService.deleteJobPosting(
+            jobId,
+            principal.getSubject()
+    );
+
+    return ResponseEntity.noContent().build();
+}
     private boolean isValidRequestModel(JobPostingRequestModel requestModel) {
         return (requestModel.getJobName() != null && !requestModel.getJobName().isEmpty()) &&
                 (requestModel.getCompany() != null && !requestModel.getCompany().isEmpty()) &&
