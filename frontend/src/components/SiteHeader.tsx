@@ -17,9 +17,11 @@ export default function SiteHeader() {
           </span>
         </Link>
 
-        <nav className="site-nav" aria-label="Main navigation">
+                <nav className="site-nav" aria-label="Main navigation">
           <a href="/#features">Features</a>
           <a href="/#how-it-works">How it works</a>
+          <NavLink to="/jobs/new">Post a job</NavLink>
+          <NavLink to="/account/jobs">My postings</NavLink>
         </nav>
 
         <div className="header-account" aria-live="polite">
