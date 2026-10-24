@@ -26,3 +26,177 @@
 .job-applications { margin-top:22px; padding:18px; border-radius:12px; background:#f3f7f9; }
 .job-application-row { display:flex; flex-wrap:wrap; gap:12px 24px; padding:12px 0; border-top:1px solid #dce5ec; font-size:14px; }
 @media(max-width:700px){.jobs-banner-inner{padding:36px 6%}.jobs-page{padding:28px 5%}.job-card,.job-form{padding:18px}.site-nav{gap:12px;flex-wrap:wrap}}
+/* ==========================================
+   APPLY JOB PAGE
+   ========================================== */
+
+.apply-form {
+  max-width: 100%;
+  padding: 36px;
+  gap: 28px;
+  border-radius: 20px;
+  box-shadow: 0 14px 40px rgba(22, 33, 59, 0.06);
+}
+
+.apply-form-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.apply-form-heading h2 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 750;
+  letter-spacing: -0.04em;
+  color: #16213b;
+}
+
+.apply-form-heading p {
+  margin: 0;
+  color: #627086;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.apply-resume-options {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.job-form label.apply-resume-option {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  padding: 23px 24px;
+  border: 1.5px solid #dce5ec;
+  border-radius: 14px;
+  background: #ffffff;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+.job-form label.apply-resume-option:hover {
+  border-color: #168b87;
+  background: #f8fcfb;
+}
+
+.job-form label.apply-resume-option.selected {
+  border-color: #168b87;
+  background: #f0faf7;
+  box-shadow: 0 0 0 2px rgba(22, 139, 135, 0.08);
+}
+
+.job-form label.apply-resume-option.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.job-form .apply-resume-option input[type="radio"] {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  margin: 0;
+  padding: 0;
+  accent-color: #168b87;
+  cursor: pointer;
+}
+
+.apply-option-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.apply-option-content strong {
+  color: #16213b;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.apply-option-content small {
+  color: #627086;
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+.apply-resume-detail {
+  padding: 20px 24px;
+  margin-top: -5px;
+  border: 1px solid #dce5ec;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+
+.apply-resume-detail label {
+  margin-bottom: 10px;
+}
+
+.apply-resume-detail select,
+.apply-resume-detail input[type="file"] {
+  width: 100%;
+}
+
+.apply-resume-detail small {
+  display: block;
+  margin-top: 10px;
+  color: #627086;
+  font-size: 12px;
+}
+
+.apply-hint {
+  padding: 14px 18px;
+  background: #f3f7f9;
+  border-radius: 10px;
+  color: #58677b;
+  font-size: 14px;
+}
+
+.apply-form-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid #e1e8ef;
+}
+
+.apply-form-footer p {
+  max-width: 400px;
+  margin: 0;
+  color: #627086;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.apply-form-footer button {
+  min-width: 210px;
+  padding: 15px 24px;
+}
+
+@media (max-width: 700px) {
+  .apply-form {
+    padding: 22px;
+  }
+
+  .job-form label.apply-resume-option {
+    padding: 18px;
+    gap: 14px;
+  }
+
+  .apply-form-footer {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .apply-form-footer button {
+    width: 100%;
+  }
+}

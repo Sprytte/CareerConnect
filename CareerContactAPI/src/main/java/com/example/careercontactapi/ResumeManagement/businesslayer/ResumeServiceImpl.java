@@ -32,7 +32,23 @@ public class ResumeServiceImpl implements ResumeService {
     public ResumeServiceImpl(ResumeRepository resumeRepository) {
         this.resumeRepository = resumeRepository;
     }
+private Resume findOwnedResume(Integer resumeId, String userId) {
 
+    Resume resume = resumeRepository.findById(resumeId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Resume not found"
+            ));
+
+    if (!resume.getUserId().equals(userId)) {
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "You cannot access another user's resume"
+        );
+    }
+
+    return resume;
+}
     @Override
     public ResumeResponseModel uploadResume(String userId, MultipartFile file) {
         validateFile(file);
@@ -87,51 +103,44 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public ResumeFile downloadResume(Integer resumeId) {
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Resume not found"
-                ));
+public ResumeFile downloadResume(Integer resumeId, String userId) {
 
-        Path filePath = Paths.get(storagePath, resume.getStoredFileName());
+    Resume resume = findOwnedResume(resumeId, userId);
 
-        if (!Files.exists(filePath)) {
-            throw new ResponseStatusException(
-                    HttpStatus.NOT_FOUND,
-                    "Resume file not found"
-            );
-        }
+    Path filePath = Paths.get(storagePath, resume.getStoredFileName());
 
-        return new ResumeFile(
-                new FileSystemResource(filePath),
-                resume.getOriginalFileName(),
-                resume.getContentType()
+    if (!Files.exists(filePath)) {
+        throw new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Resume file not found"
         );
     }
 
+    return new ResumeFile(
+            new FileSystemResource(filePath),
+            resume.getOriginalFileName(),
+            resume.getContentType()
+    );
+}
+
     @Override
-    public void deleteResume(Integer resumeId) {
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Resume not found"
-                ));
+public void deleteResume(Integer resumeId, String userId) {
 
-        Path filePath = Paths.get(storagePath, resume.getStoredFileName());
+    Resume resume = findOwnedResume(resumeId, userId);
 
-        try {
-            Files.deleteIfExists(filePath);
-            resumeRepository.delete(resume);
-        } catch (IOException e) {
-            throw new ResponseStatusException(
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    "Unable to delete resume",
-                    e
-            );
-        }
+    Path filePath = Paths.get(storagePath, resume.getStoredFileName());
+
+    try {
+        Files.deleteIfExists(filePath);
+        resumeRepository.delete(resume);
+    } catch (IOException e) {
+        throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "Unable to delete resume",
+                e
+        );
     }
-
+}
     private void validateFile(MultipartFile file) {
         if (file == null || file.isEmpty()) {
             throw new ResponseStatusException(
