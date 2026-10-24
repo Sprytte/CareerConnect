@@ -27,8 +27,9 @@ public class JobApplication {
     @Column(name = "resume_id", nullable = false)
     private Integer resumeId;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private ApplicationStatus status;
 
     @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;

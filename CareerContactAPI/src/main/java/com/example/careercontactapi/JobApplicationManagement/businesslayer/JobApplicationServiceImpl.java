@@ -1,5 +1,6 @@
 package com.example.careercontactapi.JobApplicationManagement.businesslayer;
 
+import com.example.careercontactapi.JobApplicationManagement.datalayer.ApplicationStatus;
 import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplication;
 import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplicationRepository;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationRequestModel;
@@ -59,7 +60,9 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             );
         }
 
-        Integer resumeId = requestModel == null ? null : requestModel.resumeId();
+        Integer resumeId = requestModel == null
+                ? null
+                : requestModel.resumeId();
 
         Resume resume = resumeId == null
                 ? resumeRepository.findByUserIdOrderByUploadedAtDesc(userId)
@@ -86,11 +89,13 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .jobPostingId(jobId)
                 .userId(userId)
                 .resumeId(resume.getId())
-                .status("Applied")
+                .status(ApplicationStatus.APPLIED)
                 .appliedAt(LocalDateTime.now())
                 .build();
 
-        return toResponseModel(jobApplicationRepository.save(application));
+        return toResponseModel(
+                jobApplicationRepository.save(application)
+        );
     }
 
     @Override
@@ -104,6 +109,27 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .toList();
     }
 
+    @Override
+    public JobApplicationResponseModel updateApplicationStatus(
+            Integer applicationId,
+            Integer jobId,
+            ApplicationStatus status
+    ) {
+        JobApplication application = jobApplicationRepository
+                .findByIdAndJobPostingId(applicationId, jobId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Job application with id " + applicationId
+                                + " was not found for job posting " + jobId
+                ));
+
+        application.setStatus(status);
+
+        return toResponseModel(
+                jobApplicationRepository.save(application)
+        );
+    }
+
     private JobApplicationResponseModel toResponseModel(
             JobApplication application
     ) {
@@ -112,7 +138,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 application.getJobPostingId(),
                 application.getUserId(),
                 application.getResumeId(),
-                application.getStatus(),
+                application.getStatus().name(),
                 application.getAppliedAt()
         );
     }
