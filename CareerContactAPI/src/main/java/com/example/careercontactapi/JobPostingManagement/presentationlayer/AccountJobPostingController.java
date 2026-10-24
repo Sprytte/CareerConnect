@@ -1,6 +1,7 @@
 package com.example.careercontactapi.JobPostingManagement.presentationlayer;
 
 import com.example.careercontactapi.JobApplicationManagement.businesslayer.JobApplicationService;
+import com.example.careercontactapi.JobApplicationManagement.datalayer.ApplicationStatus;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
 import com.example.careercontactapi.JobPostingManagement.businesslayer.JobPostingService;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +78,33 @@ public class AccountJobPostingController {
 
         return ResponseEntity.ok(
                 jobApplicationService.getApplicationsByJobPostingId(jobId)
+        );
+    }
+
+    @PatchMapping("/{jobId}/applications/{applicationId}/status")
+    public ResponseEntity<JobApplicationResponseModel> updateApplicationStatus(
+            @AuthenticationPrincipal OidcUser principal,
+            @PathVariable Integer jobId,
+            @PathVariable Integer applicationId,
+            @RequestParam ApplicationStatus status
+    ) {
+        if (principal == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .build();
+        }
+
+        jobPostingService.getJobPostingByIdAndUserId(
+                jobId,
+                principal.getSubject()
+        );
+
+        return ResponseEntity.ok(
+                jobApplicationService.updateApplicationStatus(
+                        applicationId,
+                        jobId,
+                        status
+                )
         );
     }
 }

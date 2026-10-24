@@ -19,34 +19,79 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class AccountApplicationService {
+
     private final JobApplicationRepository applications;
     private final JobPostingRepository postings;
 
     @Transactional(readOnly = true)
-    public List<AccountApplicationResponseModel> getApplications(String authenticatedUserId) {
+    public List<AccountApplicationResponseModel> getApplications(
+            String authenticatedUserId
+    ) {
         if (authenticatedUserId == null || authenticatedUserId.isBlank()) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
-        var ownApplications = applications.findAllByUserIdOrderByAppliedAtDescIdDesc(authenticatedUserId);
-        Map<Integer, JobPosting> jobs = postings.findAllById(ownApplications.stream()
-                        .map(application -> application.getJobPostingId()).distinct().toList())
-                .stream().collect(Collectors.toMap(JobPosting::getId, Function.identity()));
-        return ownApplications.stream().map(application -> {
-            var job = jobs.get(application.getJobPostingId());
-            return new AccountApplicationResponseModel(application.getId(),
-                    job == null ? "Job posting no longer available" : nonblank(job.getJobName(), "Job title unavailable"),
-                    job == null ? "Employer unavailable" : nonblank(job.getCompany(), "Employer unavailable"),
-                    displayStatus(application.getStatus()),
-                    application.getAppliedAt() == null ? null : application.getAppliedAt().toLocalDate());
-        }).toList();
+
+        var ownApplications =
+                applications.findAllByUserIdOrderByAppliedAtDescIdDesc(
+                        authenticatedUserId
+                );
+
+        Map<Integer, JobPosting> jobs = postings
+                .findAllById(
+                        ownApplications.stream()
+                                .map(application -> application.getJobPostingId())
+                                .distinct()
+                                .toList()
+                )
+                .stream()
+                .collect(Collectors.toMap(
+                        JobPosting::getId,
+                        Function.identity()
+                ));
+
+        return ownApplications.stream()
+                .map(application -> {
+                    var job = jobs.get(application.getJobPostingId());
+
+                    return new AccountApplicationResponseModel(
+                            application.getId(),
+                            job == null
+                                    ? "Job posting no longer available"
+                                    : nonblank(
+                                            job.getJobName(),
+                                            "Job title unavailable"
+                                    ),
+                            job == null
+                                    ? "Employer unavailable"
+                                    : nonblank(
+                                            job.getCompany(),
+                                            "Employer unavailable"
+                                    ),
+                            displayStatus(
+                                    application.getStatus().name()
+                            ),
+                            application.getAppliedAt() == null
+                                    ? null
+                                    : application.getAppliedAt().toLocalDate()
+                    );
+                })
+                .toList();
     }
 
-    private static String nonblank(String value, String fallback) {
-        return value == null || value.isBlank() ? fallback : value.trim();
+    private static String nonblank(
+            String value,
+            String fallback
+    ) {
+        return value == null || value.isBlank()
+                ? fallback
+                : value.trim();
     }
 
     static String displayStatus(String value) {
-        if (value == null) return null;
+        if (value == null) {
+            return null;
+        }
+
         return switch (value.trim().toUpperCase(Locale.ROOT)) {
             case "SUBMITTED", "APPLIED" -> "Applied";
             case "INTERVIEW" -> "Interview";
