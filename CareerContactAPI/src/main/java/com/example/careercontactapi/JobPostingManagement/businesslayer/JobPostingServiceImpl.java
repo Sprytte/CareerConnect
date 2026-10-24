@@ -61,16 +61,12 @@ public class JobPostingServiceImpl implements JobPostingService {
     }
 
     @Override
-    public JobPostingResponseModel updateJobPosting(
-            Integer jobId,
-            JobPostingRequestModel requestModel
-    ) {
-        JobPosting jobPosting = jobPostingRepository
-                .findById(jobId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Job posting with id " + jobId + " not found"
-                ));
+public JobPostingResponseModel updateJobPosting(
+        Integer jobId,
+        JobPostingRequestModel requestModel,
+        String userId
+) {
+    JobPosting jobPosting = findOwnedJobPosting(jobId, userId);
 
         jobPosting.setJobName(requestModel.getJobName());
         jobPosting.setCompany(requestModel.getCompany());
@@ -83,17 +79,11 @@ public class JobPostingServiceImpl implements JobPostingService {
         return toResponseModel(jobPostingRepository.save(jobPosting));
     }
 
-    @Override
-    public void deleteJobPosting(Integer jobId) {
-        JobPosting jobPosting = jobPostingRepository
-                .findById(jobId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Job posting with id " + jobId + " not found"
-                ));
-
-        jobPostingRepository.delete(jobPosting);
-    }
+   @Override
+public void deleteJobPosting(Integer jobId, String userId) {
+    JobPosting jobPosting = findOwnedJobPosting(jobId, userId);
+    jobPostingRepository.delete(jobPosting);
+}
 
     @Override
     public List<JobPostingResponseModel> getJobPostingsByUserId(String userId) {
@@ -125,7 +115,22 @@ public class JobPostingServiceImpl implements JobPostingService {
 
         return toResponseModel(jobPosting);
     }
+private JobPosting findOwnedJobPosting(Integer jobId, String userId) {
+    JobPosting jobPosting = jobPostingRepository.findById(jobId)
+            .orElseThrow(() -> new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Job posting not found"
+            ));
 
+    if (!jobPosting.getUserId().equals(userId)) {
+        throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "You cannot manage another recruiter's job posting"
+        );
+    }
+
+    return jobPosting;
+}
     private JobPostingResponseModel toResponseModel(JobPosting jobPosting) {
         return new JobPostingResponseModel(
                 jobPosting.getId(),
