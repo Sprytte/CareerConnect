@@ -61,9 +61,14 @@ const Resume = () => {
   }
 
   const updateResume = async (oldFilename: string) => {
-    if (!newFilename) {
+    if (!newFilename || !newFilename.trim()) {
       setMessage('Please enter a valid filename.');
       return;
+    }
+
+    if (session.status !== 'signed-in') {
+      setMessage("Please sign-in to make changes to your resume.");
+      setIsEditing(-1);
     }
 
     try {
@@ -82,6 +87,11 @@ const Resume = () => {
         setMessage('Successfully changed resume name from ' + oldFilename + ' to ' + newName);
         setIsEditing(-1);
         await loadResumes(session.user.userId);
+      } else if (response.status === 404) {
+        setMessage("Could not find the resume.");
+        setIsEditing(-1);
+      } else {
+        setMessage("An unexpected error has occurred. Please retry.");
       }
     } catch (error) {
       console.error("Resume loading error:", error);
@@ -108,6 +118,12 @@ const Resume = () => {
     const confirmDelete = window.confirm("Are you sure you want to delete resume '" + filename + "'?");
     if(!confirmDelete)
       return;
+
+    if (session.status !== 'signed-in') {
+      setMessage("Please sign-in to make changes to your resume.");
+      setIsEditing(-1);
+    }
+
     try {
       const response = await fetch(
         `${backendUrl}/api/v1/resumes/${resumeId}`,
@@ -120,6 +136,11 @@ const Resume = () => {
       if (response.ok && session.status === 'signed-in') {
         setMessage('Successfully deleted ' + filename);
         await loadResumes(session.user.userId);
+      } else if (response.status === 404) {
+        setMessage("Could not find the resume.");
+        setIsEditing(-1);
+      } else {
+        setMessage("An unexpected error has occurred. Please retry.");
       }
     } catch (error) {
       console.error("Resume loading error:", error);

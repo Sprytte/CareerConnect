@@ -116,7 +116,7 @@ public class ResumeServiceImpl implements ResumeService {
         if (originalResume == null)
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Resume not found");
 
-        originalResume.setOriginalFileName(newFilename);
+        originalResume.setOriginalFileName(newFilename.trim());
         return toResponseModel(resumeRepository.save(originalResume));
     }
 
