@@ -466,6 +466,37 @@ neutral missing-posting labels. Legacy `SUBMITTED`, `Offer`, and `Reject` map to
 `Applied`, `Offered`, and `Rejected`. Unknown statuses stay unknown and display
 neutrally in the interface. Status writes remain a separate recruiter workflow.
 
+### Edit an application
+
+```http
+PUT /api/v1/account/applications/{applicationId}
+Content-Type: application/json
+```
+
+The authenticated applicant can change the resume attached to the application
+before the job posting deadline:
+
+```json
+{
+  "resumeId": 2
+}
+```
+
+The resume must belong to the authenticated user. The endpoint returns the
+updated application summary. It returns `401 Unauthorized` without a session,
+`403 Forbidden` for another user's application or resume, `404 Not Found` when
+the application, posting, or resume does not exist, and `400 Bad Request` when
+the resume is missing or the posting deadline has passed.
+
+### Withdraw an application
+
+```http
+DELETE /api/v1/account/applications/{applicationId}
+```
+
+Only the applicant can withdraw the application, and withdrawal is allowed
+before the job posting deadline. The endpoint returns `204 No Content`.
+
 ## Application endpoints
 
 ### Update an applicant's status

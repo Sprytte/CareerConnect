@@ -20,8 +20,37 @@ public class AccountApplicationController {
     @GetMapping
     public ResponseEntity<List<AccountApplicationResponseModel>> getApplications(
             @AuthenticationPrincipal OidcUser principal) {
-        if (principal == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore())
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        return ResponseEntity
+                .ok()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
                 .body(service.getApplications(principal.getSubject()));
+    }
+
+    @PutMapping("/{applicationId}")
+    public ResponseEntity<AccountApplicationResponseModel> updateApplication(
+            @PathVariable Integer applicationId,
+            @AuthenticationPrincipal OidcUser principal,
+            @RequestBody AccountApplicationRequestModel requestModel) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        return ResponseEntity
+                .ok()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(service.updateApplication(principal.getSubject(), applicationId, requestModel));
+    }
+
+    @DeleteMapping("/{applicationId}")
+    public ResponseEntity<Void> deleteApplication(
+            @PathVariable Integer applicationId,
+            @AuthenticationPrincipal OidcUser principal) {
+        if (principal == null)
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        service.deleteApplication(principal.getSubject(), applicationId);
+        return ResponseEntity.noContent().build();
     }
 }
