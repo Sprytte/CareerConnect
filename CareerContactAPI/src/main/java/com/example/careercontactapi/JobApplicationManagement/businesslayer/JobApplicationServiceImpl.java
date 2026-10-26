@@ -121,7 +121,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         if (!jobPosting.getUserId().equals(ownerId)) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN,
-                    "Only the owner of this job posting can edit applications"
+                    "Only the owner of this job posting can edit this application"
             );
         }
 
