@@ -564,9 +564,9 @@ CareerContactAPI/src/main/java/com/example/careercontactapi/security/service/Aut
 `SecurityConfig` uses `.anyRequest().permitAll()` for routes without a more
 specific rule. The `GET /api/v1/cc/security/me` endpoint and all
 `/api/v1/resumes/**` endpoints explicitly require an authenticated session.
-Resume controller and service checks additionally enforce that users can only
-list or upload against their own user ID and can only download or delete their
-own resumes. Other custom API endpoints may still be reachable without an
+Resume controller and service checks scope list/upload operations to the
+authenticated subject and ensure users can only download or delete their own
+resumes. Other custom API endpoints may still be reachable without an
 authenticated session unless another configuration or deployment layer
 restricts them. The job-application and job-seeker application-list endpoints
 also enforce authentication and derive the applicant account from the current
