@@ -17,7 +17,7 @@ public interface JobApplicationService {
             Integer jobId
     );
 
-    JobApplicationResponseModel updateApplication(
+    JobApplicationResponseModel updateApplicationStatus(
             Integer jobId,
             String ownerId,
             Integer applicationId,

@@ -2,6 +2,7 @@ package com.example.careercontactapi.JobApplicationManagement.businesslayer;
 
 import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplication;
 import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplicationRepository;
+import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplicationStatus;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationRequestModel;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
 import com.example.careercontactapi.JobPostingManagement.datalayer.JobPosting;
@@ -113,7 +114,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     }
 
     @Override
-    public JobApplicationResponseModel updateApplication(
+    public JobApplicationResponseModel updateApplicationStatus(
             Integer jobId,
             String ownerId,
             Integer applicationId,
