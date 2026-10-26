@@ -21,18 +21,18 @@ public class JobApplicationController {
     @PutMapping("/{jobId}/applications")
     public ResponseEntity<JobApplicationResponseModel> updateApplication(
             @PathVariable Integer jobId,
-            @RequestBody(required = false) UpdateJobApplicationRequestModel requestModel,
+            @RequestBody UpdateJobApplicationRequestModel requestModel,
             @AuthenticationPrincipal OidcUser principal
     ) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return ResponseEntity.ok(jobApplicationService.updateApplication(
+        return ResponseEntity.ok(jobApplicationService.updateApplicationStatus(
                 jobId,
                 principal.getSubject(),
-                requestModel == null ? null : requestModel.applicationId(),
-                requestModel == null ? null : requestModel.status()
+                requestModel.applicationId(),
+                requestModel.status()
         ));
     }
 }
