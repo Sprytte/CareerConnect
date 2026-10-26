@@ -83,6 +83,7 @@
 
 .resume-selected-file strong {
   color: #168b87;
+  cursor: pointer;
 }
 
 .resume-icons {
