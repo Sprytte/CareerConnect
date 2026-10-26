@@ -200,3 +200,15 @@
     width: 100%;
   }
 }
+/* Prevent long job descriptions from overflowing cards */
+.job-card {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.job-card p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
