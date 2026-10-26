@@ -15,17 +15,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 
 @Service
 public class JobApplicationServiceImpl implements JobApplicationService {
-
-    private static final Map<String, String> VALID_STATUSES = Map.of(
-            "INTERVIEW", "Interview",
-            "OFFER", "Offer",
-            "REJECT", "Reject"
-    );
 
     private final JobApplicationRepository jobApplicationRepository;
     private final JobPostingRepository jobPostingRepository;
@@ -95,7 +87,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .jobPostingId(jobId)
                 .userId(userId)
                 .resumeId(resume.getId())
-                .status("Applied")
+                .status(JobApplicationStatus.APPLIED.value())
                 .appliedAt(LocalDateTime.now())
                 .build();
 
@@ -140,10 +132,10 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             );
         }
 
-        String normalizedStatus = status == null
-                ? null
-                : VALID_STATUSES.get(status.trim().toUpperCase(Locale.ROOT));
-        if (normalizedStatus == null) {
+        JobApplicationStatus applicationStatus = JobApplicationStatus.from(status)
+                .filter(validStatus -> validStatus != JobApplicationStatus.APPLIED)
+                .orElse(null);
+        if (applicationStatus == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Status must be one of: Interview, Offer, Reject"
@@ -164,7 +156,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
             );
         }
 
-        application.setStatus(normalizedStatus);
+        application.setStatus(applicationStatus.value());
         return toResponseModel(jobApplicationRepository.save(application));
     }
 
