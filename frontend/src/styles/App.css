@@ -633,3 +633,65 @@
   }
 
 }
+.site-nav a {
+  white-space: nowrap;
+}
+/* Use more of the available screen width */
+.site-header-inner {
+  width: calc(100% - 64px);
+  max-width: 1800px;
+  margin: 0 auto;
+
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+
+/* Keep navigation links together */
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: nowrap;
+}
+
+.site-nav a {
+  white-space: nowrap;
+}
+
+/* Push account controls to the far right */
+.header-account {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.header-account-name {
+  white-space: nowrap;
+}
+
+/* Keep the layout usable on smaller screens */
+@media (max-width: 1100px) {
+  .site-header-inner {
+    width: calc(100% - 32px);
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .site-nav {
+    flex-wrap: wrap;
+  }
+
+  .header-account {
+    margin-left: auto;
+    flex-wrap: wrap;
+  }
+}
+
+@media (min-width: 1200px) {
+  .site-nav {
+    margin-left: 40px;
+  }
+}

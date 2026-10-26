@@ -1,6 +1,6 @@
 import SiteHeader from './components/SiteHeader'
 import SiteFooter from './components/SiteFooter'
-import { useSearchParams } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { loginUrl, logoutUrl } from './auth/session'
 import './styles/App.css'
 
@@ -59,14 +59,14 @@ function App() {
             </p>
 
             <div className="hero-actions">
-              <a className="primary-action" href="#features">
-                Explore CareerConnect <span aria-hidden="true">↗</span>
-              </a>
+  <Link className="primary-action" to="/jobs">
+    Find Jobs <span aria-hidden="true">↗</span>
+  </Link>
 
-              <a className="text-action" href="#how-it-works">
-                See how it works <span aria-hidden="true">↓</span>
-              </a>
-            </div>
+  <a className="text-action" href="#how-it-works">
+    See how it works <span aria-hidden="true">↓</span>
+  </a>
+</div>
 
             <div className="hero-note">
               <span className="note-line" /> Built around the way you work.

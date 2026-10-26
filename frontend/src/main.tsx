@@ -9,7 +9,7 @@ import Applications from './components/Applications.tsx'
 import SessionProvider from './auth/SessionProvider'
 import { NewJobPage, MyJobsPage } from './jobs/JobPages'
 import ApplyJobPage from './jobs/ApplyJobPage'
-import BrowseJobsPage from './jobs/BrowseJobsPage'
+import SearchJobs from './components/SearchJobs'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -23,7 +23,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/jobs/new" element={<NewJobPage />} />
           <Route path="/account/jobs" element={<MyJobsPage />} />
           <Route path="/jobs/:jobId/apply" element={<ApplyJobPage />} />
-          <Route path="/jobs" element={<BrowseJobsPage />} />
+          <Route path="/jobs" element={<SearchJobs />} />
         </Routes>
       </BrowserRouter>
     </SessionProvider>
