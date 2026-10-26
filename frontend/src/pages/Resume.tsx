@@ -259,6 +259,33 @@ const Resume = () => {
     }
   };
 
+  const downloadResume = async (resumeId: number, resumeName: string) => {
+    try {
+      const response = await fetch(`${backendUrl}/api/v1/resumes/${resumeId}/download`);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        setMessage(errorText || "Could not download resume.");
+        return;
+      }
+
+      response.blob().then((blob) => {
+        const fileURL =window.URL.createObjectURL(blob);
+        const alink = document.createElement("a");
+        alink.href = fileURL;
+        if (!resumeName.endsWith('.pdf')) {
+          alink.download = resumeName;
+          alink.click();
+        } else {
+          window.open(fileURL, "_blank");
+        }
+      });
+    } catch (error) {
+      console.error("Resume download error:", error);
+      setMessage("Could not connect to the backend.");
+    }
+  }
+
   if (session.status === "loading") {
     return (
       <section className="resume">
@@ -370,7 +397,9 @@ const Resume = () => {
                         </button>
                       </div>
                     </div>
-                    : <strong>{uploadedResume.fileName}</strong>
+                    : <strong onClick={() => downloadResume(uploadedResume.id, uploadedResume.fileName)}>
+                        {uploadedResume.fileName}
+                      </strong>
                   }
                   
                   <div>
