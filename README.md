@@ -10,11 +10,11 @@ SOEN 341 · Concordia University · Fall 2026
 
 | Name | GitHub Username | Initial Responsibilities |
 | --- | --- | --- |
-| Brendan Kelly | BrendanKelly84213 | [Auth0 management, 1.1, 1.2, 1.3] |
-| Elyes Jallouli | ElyesJallouli | [4.1, 4.3] |
-| Arley Ndaribike | Arley100 | [Frontend project creation, initial UI, 1.4, 2.1] |
-| Bilal Qadir | bilalqadir2010 | [4.1, 4.2] |
-| Emilie Parent | Sprytte | [Project creation, Backend project creation, Issues creation, 1.1] |
+| Brendan Kelly | BrendanKelly84213 | [Auth0 management, 1.1, 1.2, 1.3, 3.1, 7.1, 11.2, 14.1] |
+| Elyes Jallouli | ElyesJallouli | [4.1, 4.3, 7.2, 5.2, 5.4] |
+| Arley Ndaribike | Arley100 | [Frontend project creation, initial UI, 1.4, 2.1, 3.2, 8.2] |
+| Bilal Qadir | bilalqadir2010 | [4.1, 4.2,  8.1, 6.2, 6.1, 5.3, 11.1] |
+| Emilie Parent | Sprytte | [Project creation, Backend project creation, Issues creation, 1.1, Code reviews, Backlog management, 4.4, 5.1, allow users to view/download their resumes] |
 
 Responsibilities will be updated as tasks are assigned during each sprint.
 
@@ -205,6 +205,6 @@ Meeting minutes will be stored in the project repository.
 
 ## Current Status
 
-The project is currently in Sprint 1.
+The project is currently in Sprint 3.
 
-The team is setting up the repository, defining requirements, creating user stories and tasks, selecting the technology stack, and beginning implementation of the first basic features.
+The team has implemented the core functionalities, such as account creation and management, resume upload and management, ability to create and view job postings, and ability to apply and view applications. We are working towards refining these features.
