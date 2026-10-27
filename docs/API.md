@@ -377,6 +377,62 @@ Auth0 deletion fails. This endpoint does not return JSON.
 
 ## Job posting endpoints
 
+### Create a job posting
+
+**Request**
+
+```http
+POST /api/v1/job-postings/
+Content-Type: application/json
+```
+
+**Purpose**
+
+Creates a job posting for the currently authenticated recruiter. The
+authenticated user's Auth0 subject is used as the owner; it is not
+provided in the request body.
+
+**Body**
+
+The body is of the form of JobPostingRequestModel:
+
+```json
+{
+   String userId;
+   String jobName;
+   String company;
+   String description;
+   String location;
+   String category;
+   String salary;
+   LocalDateTime deadline;
+}
+```
+
+**Returns**
+
+`201 Created` with a `JobPostingResponseModel` JSON object:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | integer | Created job posting ID. |
+| `userId` | string | Auth0 subject of the applicant. |
+| `jobName` | integer | Name of the job title. |
+| `comapny` | string | Company recruiting for the job. |
+| `description` | string | In-depth description of the job, expected applicant, work conditions, etc. |
+| `location` | string | Address of the office or 'remote'. |
+| `category` | string | Whether the position is full-time/part-time/contract/internship. |
+| `salary` | string | Salary of the employee. Can be hourly or yearly or a range. |
+| `dateCreated` | string | Creation timestamp in ISO-8601 format. |
+| `deadline` | string | Specified deadline timestamp in ISO-8601 format. |
+
+Possible errors:
+
+| Status | Description |
+| --- | --- |
+| `400 Bad Request` | The user hasn't filled out all of the fields properly. |
+| `401 Unauthorized` | No authenticated browser session was supplied. |
+
 ### Apply to a job posting
 
 **Request**
