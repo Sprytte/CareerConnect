@@ -93,21 +93,27 @@ The application will initially be developed and run locally for testing and demo
 
 The planned CareerConnect features/user stories are:
 
-- User registration
-- User login and authentication
-- User profile management
-- Resume upload and management
-- Job posting management
-- Job search and filtering
-- Job application submission
-- Application status tracking
-- Saved jobs and favourites
-- Generative AI resume feedback
-- View and manage created job applications
-- Notifications for job application deadlines
-- Notifications on application status updates
-- Edit or withdraw application
-- Add notes when applying or saving to a job application
+- US-1: User registration
+- US-2: User login and authentication
+- US-3: User profile management
+- US-4: Resume upload and management
+- US-5: Job posting management
+- US-6: Job search and filtering
+- US-7: Job application submission
+- US-8: Application status tracking
+- US-9: Saved jobs and favourites
+- US-10: Generative AI resume feedback
+- US-11: View and manage created job applications
+- US-12: Notifications for job application deadlines
+- US-13: Notifications on application status updates
+- US-14: Edit or withdraw application
+- US-15: Add notes when applying or saving to a job application
+
+### As of Sprint 3, US-12 and US-13 have been modified.
+US-12: Notifications and reminders.
+- Subtasks of the original US-12 and US-13 have been combined here
+
+US-13: Application dashboard
 
 ## Sprint 1 Basic Features
 
@@ -182,11 +188,19 @@ A task is considered complete when:
 - The changes have been merged into `main`
 - Relevant documentation has been updated
 
+## Definition of Priorities
+
+The following priorities have been defined:
+
+- P0: Crucial functionality, needs to be prioritized first
+- P1: Must be done within the sprint
+- P2: Not necessary, can be pushed later
+
 ## AI Usage
 
 The team will maintain an `AI_Log` directory in the repository.
 
-Each team member will have their own subdirectory containing a Sprint 1 PDF documenting their use of Generative AI.
+Each team member will have their own subdirectory containing a Sprint_[NB] PDF documenting their use of Generative AI.
 
 AI-assisted activities will be reviewed and validated before being used in the project.
 
