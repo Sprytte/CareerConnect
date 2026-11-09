@@ -87,10 +87,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public ResumeFile downloadResumeForUser(
-            Integer resumeId,
-            String authenticatedUserId
-    ) {
+    public ResumeFile downloadResumeForUser(Integer resumeId,String authenticatedUserId) {
         Resume resume = findOwnedResume(resumeId, authenticatedUserId);
         Path filePath = Paths.get(storagePath, resume.getStoredFileName());
 
@@ -109,11 +106,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public ResumeResponseModel updateResume(
-            Integer resumeId,
-            String newFilename,
-            String authenticatedUserId
-    ) {
+    public ResumeResponseModel updateResume(Integer resumeId, String newFilename, String authenticatedUserId) {
         Resume resume = findOwnedResume(resumeId, authenticatedUserId);
         if (newFilename == null || newFilename.isBlank()) {
             throw new ResponseStatusException(
@@ -127,10 +120,7 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
-    public void deleteResumeForUser(
-            Integer resumeId,
-            String authenticatedUserId
-    ) {
+    public void deleteResumeForUser(Integer resumeId, String authenticatedUserId) {
         Resume resume = findOwnedResume(resumeId, authenticatedUserId);
         Path filePath = Paths.get(storagePath, resume.getStoredFileName());
 
