@@ -14,7 +14,6 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
-
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -38,11 +37,8 @@ public class ResumeController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ResumeResponseModel>> getUserResumes(
-            @AuthenticationPrincipal OidcUser principal) {
-        return ResponseEntity.ok(resumeService.getResumesForUser(
-                authenticatedUserId(principal)
-        ));
+    public ResponseEntity<List<ResumeResponseModel>> getUserResumes(@AuthenticationPrincipal OidcUser principal) {
+        return ResponseEntity.ok(resumeService.getResumesForUser(authenticatedUserId(principal)));
     }
 
     @GetMapping("/{resumeId}/download")
