@@ -76,7 +76,7 @@ export default function ApplyJobPage() {
     try {
 
         const response = await fetch(
-          `${backendUrl}/api/v1/resumes/users/${userId}`,
+          `${backendUrl}/api/v1/resumes`,
           { credentials: 'include' }
         )
 
@@ -127,7 +127,7 @@ export default function ApplyJobPage() {
     formData.append('file', file)
 
     const response = await fetch(
-      `${backendUrl}/api/v1/resumes/users/${encodeURIComponent(userId)}`,
+      `${backendUrl}/api/v1/resumes`,
       {
         method: 'POST',
         credentials: 'include',
