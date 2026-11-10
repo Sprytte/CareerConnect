@@ -61,7 +61,10 @@ public class AccountApplicationService {
                     job == null ? "Job posting no longer available" : nonblank(job.getJobName(), "Job title unavailable"),
                     job == null ? "Employer unavailable" : nonblank(job.getCompany(), "Employer unavailable"),
                     displayStatus(application.getStatus()),
-                    application.getAppliedAt() == null ? null : application.getAppliedAt().toLocalDate());
+                    application.getAppliedAt() == null ? null : application.getAppliedAt().toLocalDate(),
+                    application.getResumeId(),
+                    job == null ? null : job.getDeadline(),
+                    isModifiable(job));
         }).toList();
     }
 
@@ -156,8 +159,19 @@ public class AccountApplicationService {
                 nonblank(posting.getJobName(), "Job title unavailable"),
                 nonblank(posting.getCompany(), "Employer unavailable"),
                 displayStatus(application.getStatus()),
-                application.getAppliedAt() == null ? null : application.getAppliedAt().toLocalDate()
+                application.getAppliedAt() == null ? null : application.getAppliedAt().toLocalDate(),
+                application.getResumeId(),
+                posting.getDeadline(),
+                isModifiable(posting)
         );
+    }
+
+    // Mirrors findEditablePosting: a deleted posting or a passed deadline
+    // means the application can no longer be edited or withdrawn.
+    private static boolean isModifiable(JobPosting posting) {
+        return posting != null
+                && (posting.getDeadline() == null
+                || java.time.LocalDateTime.now().isBefore(posting.getDeadline()));
     }
 
     private static String nonblank(String value, String fallback) {
