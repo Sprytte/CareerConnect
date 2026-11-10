@@ -7,6 +7,8 @@ import {
 } from '../applications/applications'
 import type { ApplicationStatus, ApplicationsLoader, ApplicationsResult, JobApplication } from '../applications/applications'
 import { loadApplications } from '../applications/loadApplications'
+import { ApplicationChangeContext } from '../applications/applicationChangeContext'
+import ApplicationActions from './ApplicationActions'
 import ApplicationStatusBadge from './ApplicationStatusBadge'
 import SiteHeader from './SiteHeader'
 import SiteFooter from './SiteFooter'
@@ -45,6 +47,7 @@ function ApplicationCard({ application }: { application: JobApplication }) {
         </p>
       </div>
       <ApplicationStatusBadge status={application.status} />
+      <ApplicationActions application={application} />
     </li>
   )
 }
@@ -100,6 +103,7 @@ function ApplicationsData({ loader }: { loader: ApplicationsLoader }) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
   const [filter, setFilter] = useState<Filter>('All')
+  const [changeNotice, setChangeNotice] = useState<string | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -119,8 +123,29 @@ function ApplicationsData({ loader }: { loader: ApplicationsLoader }) {
     setAttempt((value) => value + 1)
   }
 
+  // A saved edit or a withdrawal re-reads the list so the page always shows
+  // what the server holds, and keeps the confirmation visible meanwhile.
+  function handleApplicationChanged(message: string) {
+    setChangeNotice(message)
+    refresh()
+  }
+
+  function refreshManually() {
+    setChangeNotice(null)
+    refresh()
+  }
+
+  const changeConfirmation = changeNotice && (
+    <p className="applications-change-notice" role="status">{changeNotice}</p>
+  )
+
   if (state.status === 'loading') {
-    return <Notice title="Loading your applications">Getting the latest application statuses…</Notice>
+    return (
+      <>
+        {changeConfirmation}
+        <Notice title="Loading your applications">Getting the latest application statuses…</Notice>
+      </>
+    )
   }
   if (state.status === 'unavailable') {
     return (
@@ -150,13 +175,16 @@ function ApplicationsData({ loader }: { loader: ApplicationsLoader }) {
   }
   return (
     <section className="applications-results" aria-label="Application statuses">
+      {changeConfirmation}
       <div className="applications-results-top">
         <p>Keep track of every next step.</p>
-        <button className="applications-refresh" type="button" onClick={refresh}>
+        <button className="applications-refresh" type="button" onClick={refreshManually}>
           <span aria-hidden="true">↻</span> Refresh
         </button>
       </div>
-      <ApplicationList applications={state.applications} filter={filter} onFilter={setFilter} />
+      <ApplicationChangeContext.Provider value={handleApplicationChanged}>
+        <ApplicationList applications={state.applications} filter={filter} onFilter={setFilter} />
+      </ApplicationChangeContext.Provider>
     </section>
   )
 }

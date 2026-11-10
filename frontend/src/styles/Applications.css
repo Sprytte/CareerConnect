@@ -343,3 +343,204 @@
     padding: 34px 20px;
   }
 }
+
+/* Task 14.2: edit or withdraw an application before the posting deadline. */
+.application-card {
+  flex-wrap: wrap;
+}
+
+.application-card-main {
+  flex: 1 1 260px;
+}
+
+.application-actions {
+  flex: 1 0 100%;
+  align-self: stretch;
+  padding-top: 18px;
+  border-top: 1px solid #edf1f5;
+}
+
+.application-actions-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.application-deadline,
+.application-locked,
+.application-edit-hint,
+.application-edit-note,
+.application-withdraw p {
+  margin: 0;
+  color: #526078;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.application-edit-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.application-action {
+  padding: 9px 15px;
+  border: 1px solid #c9d5df;
+  border-radius: 9px;
+  background: #fff;
+  color: #16213b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.application-action:hover:not(:disabled) {
+  border-color: #168b87;
+}
+
+.application-action:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.application-action--primary {
+  border-color: #137773;
+  background: #137773;
+  color: #fff;
+}
+
+.application-action--primary:hover:not(:disabled) {
+  background: #0f625f;
+}
+
+.application-action--danger-outline {
+  border-color: #e7bcc6;
+  color: #a3334a;
+}
+
+.application-action--danger-outline:hover:not(:disabled) {
+  border-color: #a3334a;
+}
+
+.application-action--danger {
+  border-color: #a3334a;
+  background: #a3334a;
+  color: #fff;
+}
+
+.application-action--danger:hover:not(:disabled) {
+  border-color: #872a3d;
+  background: #872a3d;
+}
+
+.application-edit,
+.application-withdraw {
+  display: grid;
+  gap: 14px;
+}
+
+.application-edit h4,
+.application-withdraw h4 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: -.02em;
+}
+
+.application-edit-options {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.application-edit-options legend {
+  margin-bottom: 10px;
+  padding: 0;
+  color: #16213b;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.application-edit-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.application-edit-option input {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  accent-color: #168b87;
+}
+
+.application-edit-detail {
+  display: grid;
+  gap: 7px;
+  margin-left: 27px;
+  font-size: 13px;
+}
+
+.application-edit-detail label {
+  color: #526078;
+  font-weight: 650;
+}
+
+.application-edit-detail select,
+.application-edit-detail input[type="file"] {
+  max-width: 420px;
+  padding: 10px 12px;
+  border: 1px solid #c9d5df;
+  border-radius: 9px;
+  background: #fff;
+  color: #16213b;
+  font: inherit;
+  font-size: 14px;
+}
+
+.application-edit-detail select:focus-visible,
+.application-edit-detail input:focus-visible,
+.application-edit-option input:focus-visible {
+  outline: 3px solid #29a5a5;
+  outline-offset: 2px;
+}
+
+.application-change-error {
+  margin: 0;
+  color: #a32222;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.application-change-error a {
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.applications-change-notice {
+  margin: 0 0 18px;
+  padding: 13px 16px;
+  border: 1px solid #cce9d8;
+  border-radius: 10px;
+  background: #eaf8ef;
+  color: #186a45;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+@media (max-width: 600px) {
+  .application-card-main,
+  .application-actions {
+    flex-basis: auto;
+  }
+
+  .application-edit-detail {
+    margin-left: 0;
+  }
+}
