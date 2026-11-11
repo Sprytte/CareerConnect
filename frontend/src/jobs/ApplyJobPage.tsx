@@ -69,7 +69,6 @@ export default function ApplyJobPage() {
   useEffect(() => {
   if (session.status !== 'signed-in') return
 
-  const userId = encodeURIComponent(session.user.userId)
   let active = true
 
   async function loadResumes() {
@@ -112,7 +111,7 @@ export default function ApplyJobPage() {
     ? session.user.userId
     : null])
 
-  async function uploadResume(userId: string): Promise<number> {
+  async function uploadResume(): Promise<number> {
     if (!file) {
       throw new Error('Please select a resume to upload.')
     }
@@ -171,7 +170,7 @@ export default function ApplyJobPage() {
       }
 
       if (choice === 'upload') {
-        resumeId = await uploadResume(session.user.userId)
+        resumeId = await uploadResume()
       }
 
       if (choice === 'recent' && resumes.length === 0) {

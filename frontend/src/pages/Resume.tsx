@@ -28,7 +28,7 @@ const Resume = () => {
   const [isEditing, setIsEditing] = useState(-1); // ID of resume being edited. -1 when none
   const [newFilename, setNewFilename] = useState("");
 
-  const loadResumes = async (userId: string) => {
+  const loadResumes = async () => {
     try {
       setIsLoadingResumes(true);
 
@@ -86,7 +86,7 @@ const Resume = () => {
       if (response.ok && session.status === 'signed-in') {
         setMessage('Successfully changed resume name from ' + oldFilename + ' to ' + newName);
         setIsEditing(-1);
-        await loadResumes(session.user.userId);
+        await loadResumes();
       } else if (response.status === 404) {
         setMessage("Could not find the resume.");
         setIsEditing(-1);
@@ -135,7 +135,7 @@ const Resume = () => {
 
       if (response.ok && session.status === 'signed-in') {
         setMessage('Successfully deleted ' + filename);
-        await loadResumes(session.user.userId);
+        await loadResumes();
       } else if (response.status === 404) {
         setMessage("Could not find the resume.");
         setIsEditing(-1);
@@ -152,7 +152,7 @@ const Resume = () => {
 
   useEffect(() => {
     if (session.status === "signed-in") {
-      loadResumes(session.user.userId);
+      loadResumes();
     } else if (session.status === "signed-out") {
       setResumes([]);
       setIsLoadingResumes(false);
@@ -221,7 +221,6 @@ const Resume = () => {
       return;
     }
 
-    const userId = session.user.userId;
 
     const formData = new FormData();
     formData.append("file", resume);
@@ -250,7 +249,7 @@ const Resume = () => {
       setMessage(`Successfully uploaded ${data.fileName}.`);
       setResume(null);
 
-      await loadResumes(userId);
+      await loadResumes();
     } catch (error) {
       console.error("Resume upload error:", error);
       setMessage("Could not connect to the backend.");
