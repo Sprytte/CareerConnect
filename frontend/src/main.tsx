@@ -8,6 +8,7 @@ import Account from './components/Account.tsx'
 import Applications from './components/Applications.tsx'
 import SessionProvider from './auth/SessionProvider'
 import { NewJobPage, MyJobsPage } from './jobs/JobPages'
+import PostingApplicationsPage from './jobs/PostingApplicationsPage'
 import ApplyJobPage from './jobs/ApplyJobPage'
 import SearchJobs from './components/SearchJobs'
 
@@ -22,6 +23,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/account/applications" element={<Applications />} />
           <Route path="/jobs/new" element={<NewJobPage />} />
           <Route path="/account/jobs" element={<MyJobsPage />} />
+          <Route path="/account/jobs/applications" element={<PostingApplicationsPage />} />
           <Route path="/jobs/:jobId/apply" element={<ApplyJobPage />} />
           <Route path="/jobs" element={<SearchJobs />} />
         </Routes>
