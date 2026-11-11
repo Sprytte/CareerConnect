@@ -1,3 +1,4 @@
+
 .applications-shell {
   display: flex;
   flex-direction: column;
@@ -315,6 +316,144 @@
   width: 90%;
 }
 
+.applications-chart {
+  margin: 24px 0 32px;
+  padding: 28px;
+  border: 1px solid #e1e7ed;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 4px 14px #16213b04;
+}
+
+.applications-chart-heading {
+  margin-bottom: 28px;
+}
+
+.applications-chart-heading h2 {
+  margin: 0 0 8px;
+  color: #16213b;
+  font-size: 18px;
+  letter-spacing: -.025em;
+}
+
+.applications-chart-heading p {
+  margin: 0;
+  color: #526078;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.applications-chart-scroll {
+  width: 100%;
+  overflow-x: auto;
+  padding: 8px 0 0;
+}
+
+.applications-chart-body {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  gap: 14px;
+}
+
+.applications-chart-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 0 0 26px;
+  height: 180px;
+  color: #526078;
+  font-size: 11px;
+  text-align: right;
+}
+
+.applications-chart-main {
+  min-width: 0;
+  flex: 1;
+}
+
+.applications-chart-plot {
+  position: relative;
+  height: 180px;
+}
+
+.applications-chart-grid {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.applications-chart-gridline {
+  width: 100%;
+  border-top: 1px dashed #e1e7ed;
+}
+
+.applications-chart-bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 8px;
+}
+
+.applications-chart-bar-column {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.applications-chart-bar {
+  width: 70%;
+  max-width: 55px;
+  min-height: 2px;
+  border-radius: 7px 7px 0 0;
+  background: #168b87;
+  transition: background .2s ease;
+}
+
+.applications-chart-bar:hover {
+  background: #137773;
+}
+
+.applications-chart-labels {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 0 8px;
+}
+
+.applications-chart-labels span {
+  flex: 1 1 0;
+  min-width: 0;
+  color: #526078;
+  font-size: 11px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.applications-chart-axis-label {
+  margin: 18px 0 0;
+  color: #526078;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.applications-chart-empty {
+  margin: 0;
+  padding: 40px 12px;
+  color: #526078;
+  text-align: center;
+  font-size: 13px;
+}
+
 @media (max-width: 600px) {
   .applications-page {
     padding: 24px 6% 56px;
@@ -341,5 +480,17 @@
 
   .applications-notice {
     padding: 34px 20px;
+  }
+
+  .applications-chart {
+    padding: 22px 16px;
+  }
+
+  .applications-chart-heading {
+    margin-bottom: 24px;
+  }
+
+  .applications-chart-body {
+    min-width: 340px;
   }
 }
