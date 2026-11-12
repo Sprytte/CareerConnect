@@ -8,6 +8,7 @@ import com.example.careercontactapi.UserManagement.businesslayer.UserService;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
 import com.example.careercontactapi.ResumeManagement.businesslayer.ResumeService;
 import com.example.careercontactapi.ResumeManagement.datalayer.ResumeFile;
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
@@ -46,6 +47,8 @@ public class AccountJobPostingController {
                     .build();
         }
 
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
+
         return ResponseEntity.ok(
                 jobPostingService.getJobPostingsByUserId(
                         principal.getSubject()
@@ -63,6 +66,8 @@ public class AccountJobPostingController {
                     .status(HttpStatus.UNAUTHORIZED)
                     .build();
         }
+
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
 
         return ResponseEntity.ok(
                 jobPostingService.getJobPostingByIdAndUserId(
@@ -83,6 +88,8 @@ public class AccountJobPostingController {
                     .build();
         }
 
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
+
         return ResponseEntity.ok(
                 jobPostingService.archiveJobPosting(
                         jobId,
@@ -101,6 +108,8 @@ public class AccountJobPostingController {
                     .status(HttpStatus.UNAUTHORIZED)
                     .build();
         }
+
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
 
         jobPostingService.getJobPostingByIdAndUserId(
                 jobId,
@@ -143,6 +152,7 @@ public class AccountJobPostingController {
             );
         }
 
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
 
         // Only the owner of the posting can review its applications.
         jobPostingService.getJobPostingByIdAndUserId(
