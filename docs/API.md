@@ -21,8 +21,14 @@ Authentication uses Auth0 through Spring Security OAuth2/OIDC:
 2. Complete authentication with Auth0.
 3. Spring Security handles `GET /login/oauth2/code/okta`.
 4. The backend processes `GET /api/v1/cc/security/redirect`.
-5. The backend creates the local user if necessary, sets cookies, and redirects
-   to the frontend root or `/admin`.
+5. The backend creates the local user if necessary. Accounts without a role are
+   redirected to `/onboarding/role`; existing accounts continue to the frontend
+   root or `/admin`.
+
+Auth0 still owns the sign-in and sign-up screens. The frontend exposes a single
+**Sign in** link; new users choose Auth0's sign-up option on the hosted page.
+The role is chosen immediately after the identity is authenticated, so the same
+onboarding flow works for email/password and social accounts.
 
 The login flow is browser-based rather than a JSON API. The post-login response
 sets these cookies:
@@ -151,15 +157,16 @@ None.
 
 **Returns**
 
-`200 OK` with a `UserInfoResponseModel` JSON object:
+`200 OK` with a `UserResponseModel` JSON object:
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `userId` | string | Auth0 user identifier. |
 | `email` | string | User email address. |
 | `name` | string | User display name. |
-| `picture` | string | Profile picture URL. |
-| `user_metadata` | object | Not populated by this endpoint. |
+| `pictureUrl` | string | Profile picture URL. |
+| `role` | string or null | `JOB_SEEKER`, `RECRUITER`, or null until onboarding is complete. |
+| `permissions` | string[] | Permissions granted by the selected role; empty before a role is chosen. |
 
 `401 Unauthorized` if there is no authenticated server session.
 
@@ -191,8 +198,53 @@ None.
 | `name` | string | Saved display name. |
 | `email` | string | Saved email address. |
 | `pictureUrl` | string | Saved profile picture URL, if present. |
+| `role` | string or null | `JOB_SEEKER`, `RECRUITER`, or null until onboarding is complete. |
+| `permissions` | string[] | Permissions granted by the selected role; empty before a role is chosen. |
 
 `404 Not Found` if no local user exists with the supplied `userId`.
+
+### Choose the account role
+
+```http
+PUT /api/v1/users/{userId}/role
+Content-Type: application/json
+
+{"role":"JOB_SEEKER"}
+```
+
+**Purpose**
+
+Sets the role for a newly created account. The authenticated subject must match
+`userId`. A role can be selected only once; repeating the same role is
+idempotent, while switching to the other role returns `409 Conflict`. The
+frontend calls this from `/onboarding/role` immediately after the first
+successful Auth0 sign-in.
+
+**Body**
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `role` | string | Yes | `JOB_SEEKER` or `RECRUITER` (common spellings such as `job seeker` are also accepted). |
+
+**Returns**
+
+`200 OK` with the updated `UserResponseModel`, including `role` and
+`permissions`.
+
+Errors: `400` for an invalid role, `401` without a session, `403` for a
+different account, `409` when the role has already been set to the other value,
+and `404` if no local profile exists.
+
+Current permissions returned with a role:
+
+| Role | Permissions |
+| --- | --- |
+| `JOB_SEEKER` | `jobs:read`, `applications:manage`, `resumes:manage` |
+| `RECRUITER` | `jobs:read`, `job-postings:manage`, `applicants:read` |
+
+The role-specific server routes enforce the same values: recruiter-only job
+posting management returns `403` for job seekers, while applications and resume
+management return `403` for recruiters. Job search remains available to both.
 
 ### Update a persisted user profile
 
