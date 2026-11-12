@@ -1,3 +1,4 @@
+
 package com.example.careercontactapi.JobPostingManagement.presentationlayer;
 
 import com.example.careercontactapi.JobApplicationManagement.businesslayer.JobApplicationService;
@@ -53,6 +54,25 @@ public class AccountJobPostingController {
 
         return ResponseEntity.ok(
                 jobPostingService.getJobPostingByIdAndUserId(
+                        jobId,
+                        principal.getSubject()
+                )
+        );
+    }
+
+    @PatchMapping("/{jobId}/archive")
+    public ResponseEntity<JobPostingResponseModel> archiveJobPosting(
+            @AuthenticationPrincipal OidcUser principal,
+            @PathVariable Integer jobId
+    ) {
+        if (principal == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .build();
+        }
+
+        return ResponseEntity.ok(
+                jobPostingService.archiveJobPosting(
                         jobId,
                         principal.getSubject()
                 )

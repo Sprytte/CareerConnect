@@ -1,3 +1,4 @@
+
 package com.example.careercontactapi.JobPostingManagement.businesslayer;
 
 import com.example.careercontactapi.JobPostingManagement.datalayer.JobPosting;
@@ -44,6 +45,7 @@ public class JobPostingServiceImpl implements JobPostingService {
         return jobPostingRepository
                 .findAll()
                 .stream()
+                .filter(jobPosting -> !jobPosting.isArchived())
                 .map(this::toResponseModel)
                 .toList();
     }
@@ -84,6 +86,22 @@ public void deleteJobPosting(Integer jobId, String userId) {
     JobPosting jobPosting = findOwnedJobPosting(jobId, userId);
     jobPostingRepository.delete(jobPosting);
 }
+
+    @Override
+    public JobPostingResponseModel archiveJobPosting(Integer jobId, String userId) {
+        JobPosting jobPosting = findOwnedJobPosting(jobId, userId);
+
+        if (jobPosting.isArchived()) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "Job posting is already archived"
+            );
+        }
+
+        jobPosting.setArchived(true);
+
+        return toResponseModel(jobPostingRepository.save(jobPosting));
+    }
 
     @Override
     public List<JobPostingResponseModel> getJobPostingsByUserId(String userId) {
@@ -142,7 +160,8 @@ private JobPosting findOwnedJobPosting(Integer jobId, String userId) {
                 jobPosting.getCategory(),
                 jobPosting.getSalary(),
                 jobPosting.getDateCreated(),
-                jobPosting.getDeadline()
+                jobPosting.getDeadline(),
+                jobPosting.isArchived()
         );
     }
 }
