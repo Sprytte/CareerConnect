@@ -1,3 +1,4 @@
+
 package com.example.careercontactapi.JobApplicationManagement.businesslayer;
 
 import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplication;
@@ -44,6 +45,13 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                         HttpStatus.NOT_FOUND,
                         "Job posting with id " + jobId + " not found"
                 ));
+
+        if (jobPosting.isArchived()) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "This job posting is archived and no longer accepts applications"
+            );
+        }
 
         if (jobPosting.getDeadline() != null
                 && !LocalDateTime.now().isBefore(jobPosting.getDeadline())) {
@@ -153,7 +161,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                     HttpStatus.NOT_FOUND,
                     "Application with id " + applicationId
                             + " not found for job posting " + jobId
-            );
+                );
         }
 
         application.setStatus(applicationStatus.value());
