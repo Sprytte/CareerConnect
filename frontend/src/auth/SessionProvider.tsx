@@ -5,7 +5,7 @@ import {
   SessionContext,
   SessionUserUpdateContext,
 } from './session'
-import type { SessionState, SessionUser } from './session'
+import type { SessionState, SessionUserUpdate } from './session'
 
 type SessionProviderProps = {
   children: ReactNode
@@ -16,10 +16,10 @@ export default function SessionProvider({ children }: SessionProviderProps) {
     status: 'loading',
   })
 
-  const updateSessionUser = useCallback((user: SessionUser) => {
+  const updateSessionUser = useCallback((update: SessionUserUpdate) => {
     setSession((current) =>
-      current.status === 'signed-in' && current.user.userId === user.userId
-        ? { status: 'signed-in', user }
+      current.status === 'signed-in' && current.user.userId === update.userId
+        ? { status: 'signed-in', user: { ...current.user, ...update } }
         : current,
     )
   }, [])

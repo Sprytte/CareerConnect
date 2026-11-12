@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { loginUrl, useSession, useUpdateSessionUser } from '../auth/session'
+import { roleDescriptions, roleLabels } from '../auth/roles'
 import SiteHeader from './SiteHeader'
 import SiteFooter from './SiteFooter'
 import {
@@ -418,6 +419,43 @@ function PasswordEditor({ userId }: { userId: string }) {
   )
 }
 
+function RoleSummary({ profile }: { profile: AccountProfile }) {
+  return (
+    <section className="account-card" aria-labelledby="role-title">
+      <div className="account-section-heading">
+        <span className="account-section-icon" aria-hidden="true">
+          03
+        </span>
+        <div>
+          <h2 id="role-title">Account type</h2>
+          <p>Your role decides which workspace you see.</p>
+        </div>
+      </div>
+
+      {profile.role ? (
+        <>
+          <p className="account-badge">{roleLabels[profile.role]}</p>
+          <p className="account-availability">{roleDescriptions[profile.role]}</p>
+          <p className="account-field-hint">
+            Account types are chosen once when the account is created. Contact
+            support if your role needs to change.
+          </p>
+        </>
+      ) : (
+        <>
+          <p className="account-availability">
+            Choose whether this account is a job seeker or a recruiter to finish
+            setting it up.
+          </p>
+          <Link className="account-primary" to="/onboarding/role">
+            Choose my account type <span aria-hidden="true">↗</span>
+          </Link>
+        </>
+      )}
+    </section>
+  )
+}
+
 function ProfileLoader({ userId }: { userId: string }) {
   const [loaded, setLoaded] = useState<ProfileLoad>({ status: 'loading' })
   const [attempt, setAttempt] = useState(0)
@@ -476,6 +514,7 @@ function ProfileLoader({ userId }: { userId: string }) {
   return (
     <>
       <ProfileEditor initial={loaded.profile} />
+      <RoleSummary profile={loaded.profile} />
       <PasswordEditor userId={loaded.profile.userId} />
     </>
   )

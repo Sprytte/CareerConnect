@@ -1,8 +1,11 @@
 import { Link, NavLink } from 'react-router-dom'
 import { loginUrl, logoutUrl, useSession } from '../auth/session'
+import { roleLabels } from '../auth/roles'
 
 export default function SiteHeader() {
   const session = useSession()
+  const signedIn = session.status === 'signed-in'
+  const needsRole = signedIn && session.user.role === null
 
   return (
     <header className="site-header">
@@ -17,28 +20,49 @@ export default function SiteHeader() {
           </span>
         </Link>
 
-                <nav className="site-nav" aria-label="Main navigation">
+        <nav className="site-nav" aria-label="Main navigation">
           <a href="/#features">Features</a>
           <a href="/#how-it-works">How it works</a>
-          <NavLink to="/jobs/new">Post a job</NavLink>
-          <NavLink to="/account/jobs">My postings</NavLink>
+          <NavLink to="/jobs">Find jobs</NavLink>
+
+          {signedIn && session.user.role === 'RECRUITER' && (
+            <>
+              <NavLink to="/jobs/new">Post a job</NavLink>
+              <NavLink to="/account/jobs">My postings</NavLink>
+            </>
+          )}
+
+          {signedIn && session.user.role === 'JOB_SEEKER' && (
+            <NavLink to="/account/applications">Applications</NavLink>
+          )}
         </nav>
 
         <div className="header-account" aria-live="polite">
-          {session.status === 'signed-in' ? (
+          {signedIn ? (
             <>
-              <NavLink className="header-applications" to="/account/applications">Applications</NavLink>
-              <span
-                className="header-account-name"
-                title={session.user.name}
-              >
+              <span className="header-account-name" title={session.user.name}>
                 Hi, {session.user.name}
               </span>
-              <Link className="header-sign-in" to="/account">My account</Link>
+              {needsRole ? (
+                <Link className="header-sign-in" to="/onboarding/role">
+                  Finish setup <span aria-hidden="true">↗</span>
+                </Link>
+              ) : (
+                <>
+                  <span className="header-account-note">
+                    {session.user.role ? roleLabels[session.user.role] : ''}
+                  </span>
+                  <Link className="header-sign-in" to="/account">
+                    My account
+                  </Link>
+                </>
+              )}
               {/* A normal POST navigation lets the backend finish the Auth0
                   logout redirect; a fetch would not navigate the browser. */}
               <form method="post" action={logoutUrl}>
-                <button className="header-sign-in" type="submit">Sign out</button>
+                <button className="header-sign-in" type="submit">
+                  Sign out
+                </button>
               </form>
             </>
           ) : (

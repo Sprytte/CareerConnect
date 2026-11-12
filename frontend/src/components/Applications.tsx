@@ -187,7 +187,23 @@ export default function Applications({ loader = loadApplications }: Props) {
         }>
           Please check your connection and try again.
         </Notice>}
-        {session.status === 'signed-in' && <ApplicationsData key={session.user.userId} loader={loader} />}
+        {session.status === 'signed-in' && session.user.role === null && (
+          <Notice title="Choose your account type first" action={
+            <Link className="applications-button" to="/onboarding/role">Choose a role</Link>
+          }>
+            Applications belong to job seeker accounts.
+          </Notice>
+        )}
+        {session.status === 'signed-in' && session.user.role === 'RECRUITER' && (
+          <Notice title="Applications are for job seeker accounts" action={
+            <Link className="applications-button" to="/account/jobs">Go to my postings</Link>
+          }>
+            Recruiter accounts review applicants from their job postings instead.
+          </Notice>
+        )}
+        {session.status === 'signed-in' && session.user.role === 'JOB_SEEKER' && (
+          <ApplicationsData key={session.user.userId} loader={loader} />
+        )}
       </main>
       <SiteFooter />
     </div>

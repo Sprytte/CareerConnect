@@ -9,9 +9,12 @@ uses `VITE_BACKEND_URL` or `http://localhost:8080` for the backend.
 | Route | Feature |
 | --- | --- |
 | `/` | Welcome page and shared sign-in header |
-| `/account/resume` | Resume management |
-| `/account` | Profile editor from PR #64 |
-| `/account/applications` | Application-status list from PR #70 |
+| `/onboarding/role` | One-time job seeker / recruiter selection after first sign-in |
+| `/jobs` | Job search and filtering |
+| `/account/resume` | Resume management (job seekers) |
+| `/account` | Profile editor and account type summary |
+| `/account/applications` | Application-status list (job seekers) |
+| `/jobs/new`, `/account/jobs` | Recruiter job-posting workspace |
 
 The last two routes are added by their respective PRs; both are present after
 combining those branches. The backend being run must include the corresponding
@@ -22,6 +25,22 @@ real sign-in. Frontend code contains no client secret.
 unavailable, and loading states are handled separately. Fresh saved profile
 values update the shared header greeting. Account authorization is enforced on
 the server, including the profile and application-list routes.
+
+## Account roles (#62)
+
+Auth0 keeps its hosted sign-in and sign-up pages. The header exposes a single
+**Sign in** link; new users select Auth0's sign-up option on the hosted page.
+After the first successful sign-in, `/api/v1/cc/security/redirect` sends
+accounts without a role to `/onboarding/role`. The page calls
+`PUT /api/v1/users/{userId}/role` and stores the chosen role in the local
+profile. `RoleGate` also redirects a signed-in account with no role, so the
+workspace cannot be used before onboarding.
+
+The role is returned by `/me` together with its permissions. The header and
+account pages use it to show job-seeker or recruiter navigation, and the backend
+rejects role-specific actions with `403` when the account does not match. Roles
+are chosen once; changing an account type requires a deliberate support/admins
+process rather than a client-side switch.
 
 ## Profile editor (#64)
 
@@ -53,7 +72,7 @@ recruiter's status-update workflow remains in separate PR #74.
 
 Run `npm run build` for TypeScript and a production build. Lint the changed feature
 files with the commands in the integration package. Full `npm run lint` still
-reports the existing effect error in `src/components/Resume.tsx` on this main base.
+reports the existing effect error in `src/pages/Resume.tsx` on this main base.
 
 The package includes a reproducible browser harness using controlled API responses,
 plus the result summary. The backend includes controller, service, HTTP-adapter,
