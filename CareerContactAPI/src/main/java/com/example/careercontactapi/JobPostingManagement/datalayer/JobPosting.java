@@ -1,3 +1,4 @@
+
 package com.example.careercontactapi.JobPostingManagement.datalayer;
 
 import jakarta.persistence.*;
@@ -38,4 +39,8 @@ public class JobPosting {
     private LocalDateTime dateCreated;
 
     private LocalDateTime deadline;
+
+    @Column(name = "archived", nullable = false)
+    @Builder.Default
+    private boolean archived = false;
 }
