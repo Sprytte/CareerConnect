@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
@@ -16,6 +17,115 @@ import '../styles/Applications.css'
 type Props = { loader?: ApplicationsLoader }
 type LoadState = ApplicationsResult | { status: 'loading' } | { status: 'error' }
 type Filter = 'All' | ApplicationStatus
+
+type WeeklyApplicationCount = {
+  label: string
+  count: number
+}
+
+function getWeeklyApplicationCounts(applications: JobApplication[]): WeeklyApplicationCount[] {
+  const counts = new Map<string, number>()
+
+  applications.forEach((application) => {
+    if (!application.appliedOn) return
+
+    const date = new Date(`${application.appliedOn}T00:00:00Z`)
+
+    if (Number.isNaN(date.getTime())) return
+
+    const day = date.getUTCDay()
+    const diffToMonday = day === 0 ? -6 : 1 - day
+
+    const monday = new Date(date)
+    monday.setUTCDate(date.getUTCDate() + diffToMonday)
+
+    const weekKey = monday.toISOString().slice(0, 10)
+
+    counts.set(weekKey, (counts.get(weekKey) ?? 0) + 1)
+  })
+
+  return Array.from(counts.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([weekStart, count]) => ({
+      label: new Intl.DateTimeFormat('en-CA', {
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'UTC',
+      }).format(new Date(`${weekStart}T00:00:00Z`)),
+      count,
+    }))
+}
+
+function ApplicationActivityChart({ applications }: { applications: JobApplication[] }) {
+  const weeklyData = getWeeklyApplicationCounts(applications)
+  const maxCount = Math.max(1, ...weeklyData.map((week) => week.count))
+  const tickCount = Math.min(maxCount, 5)
+  const ticks = Array.from(
+    { length: tickCount + 1 },
+    (_, index) => Math.round((maxCount * (tickCount - index)) / tickCount),
+  )
+
+  return (
+    <section className="applications-chart" aria-labelledby="applications-chart-title">
+      <div className="applications-chart-heading">
+        <h2 id="applications-chart-title">Applications submitted over time</h2>
+        <p>Track how many job applications you submitted each week.</p>
+      </div>
+
+      {weeklyData.length === 0 ? (
+        <p className="applications-chart-empty">
+          No application activity to display yet.
+        </p>
+      ) : (
+        <div
+          className="applications-chart-scroll"
+          role="img"
+          aria-label={`Weekly application submissions: ${weeklyData
+            .map((week) => `${week.label}: ${week.count}`)
+            .join(', ')}`}
+        >
+          <div className="applications-chart-body">
+            <div className="applications-chart-y-axis" aria-hidden="true">
+              {ticks.map((tick) => <span key={tick}>{tick}</span>)}
+            </div>
+
+            <div className="applications-chart-main">
+              <div className="applications-chart-plot">
+                <div className="applications-chart-grid" aria-hidden="true">
+                  {ticks.map((tick) => (
+                    <div key={tick} className="applications-chart-gridline" />
+                  ))}
+                </div>
+
+                <div className="applications-chart-bars">
+                  {weeklyData.map((week, index) => (
+                    <div
+                      className="applications-chart-bar-column"
+                      key={`${week.label}-${index}`}
+                    >
+                      <div
+                        className="applications-chart-bar"
+                        style={{ height: `${(week.count / maxCount) * 100}%` }}
+                        title={`${week.count} applications — week of ${week.label}`}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="applications-chart-labels" aria-hidden="true">
+                {weeklyData.map((week, index) => (
+                  <span key={`${week.label}-${index}`}>{week.label}</span>
+                ))}
+              </div>
+            </div>
+          </div>
+          <p className="applications-chart-axis-label">Week</p>
+        </div>
+      )}
+    </section>
+  )
+}
 
 function Notice({ title, children, action, error = false }: {
   title: string
@@ -156,6 +266,7 @@ function ApplicationsData({ loader }: { loader: ApplicationsLoader }) {
           <span aria-hidden="true">↻</span> Refresh
         </button>
       </div>
+      <ApplicationActivityChart applications={state.applications} />
       <ApplicationList applications={state.applications} filter={filter} onFilter={setFilter} />
     </section>
   )
