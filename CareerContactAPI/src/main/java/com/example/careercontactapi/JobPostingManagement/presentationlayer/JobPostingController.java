@@ -2,6 +2,8 @@ package com.example.careercontactapi.JobPostingManagement.presentationlayer;
 
 import com.example.careercontactapi.JobPostingManagement.businesslayer.JobPostingService;
 import com.example.careercontactapi.JobApplicationManagement.businesslayer.JobApplicationService;
+import com.example.careercontactapi.UserManagement.businesslayer.UserService;
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationRequestModel;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +26,7 @@ public class JobPostingController {
 
     private final JobPostingService jobPostingService;
     private final JobApplicationService jobApplicationService;
+    private final UserService userService;
 
     @PostMapping("/{jobId}/apply")
     public ResponseEntity<JobApplicationResponseModel> applyToJobPosting(
@@ -34,6 +37,8 @@ public class JobPostingController {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+
+        userService.requireRole(principal.getSubject(), UserRole.JOB_SEEKER);
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(jobApplicationService.applyToJobPosting(
@@ -50,7 +55,11 @@ public class JobPostingController {
     ) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        } else if (!isValidRequestModel(requestModel)) {
+        }
+
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
+
+        if (!isValidRequestModel(requestModel)) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body("Please make sure all fields are present and valid");
         }
@@ -77,44 +86,49 @@ public class JobPostingController {
     }
 
     @PutMapping("/{jobId}")
-public ResponseEntity<JobPostingResponseModel> updateJobPosting(
-        @PathVariable Integer jobId,
-        @RequestBody JobPostingRequestModel requestModel,
-        @AuthenticationPrincipal OidcUser principal
-) {
-    if (principal == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    }
+    public ResponseEntity<JobPostingResponseModel> updateJobPosting(
+            @PathVariable Integer jobId,
+            @RequestBody JobPostingRequestModel requestModel,
+            @AuthenticationPrincipal OidcUser principal
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
 
-    if (!isValidRequestModel(requestModel)) {
-        return ResponseEntity.badRequest().build();
-    }
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
 
-    return ResponseEntity.ok(
-            jobPostingService.updateJobPosting(
-                    jobId,
-                    requestModel,
-                    principal.getSubject()
-            )
-    );
-}
+        if (!isValidRequestModel(requestModel)) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        return ResponseEntity.ok(
+                jobPostingService.updateJobPosting(
+                        jobId,
+                        requestModel,
+                        principal.getSubject()
+                )
+        );
+    }
 
     @DeleteMapping("/{jobId}")
-public ResponseEntity<Void> deleteJobPosting(
-        @PathVariable Integer jobId,
-        @AuthenticationPrincipal OidcUser principal
-) {
-    if (principal == null) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public ResponseEntity<Void> deleteJobPosting(
+            @PathVariable Integer jobId,
+            @AuthenticationPrincipal OidcUser principal
+    ) {
+        if (principal == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
+
+        jobPostingService.deleteJobPosting(
+                jobId,
+                principal.getSubject()
+        );
+
+        return ResponseEntity.noContent().build();
     }
 
-    jobPostingService.deleteJobPosting(
-            jobId,
-            principal.getSubject()
-    );
-
-    return ResponseEntity.noContent().build();
-}
     private boolean isValidRequestModel(JobPostingRequestModel requestModel) {
         return (requestModel.getJobName() != null && !requestModel.getJobName().isEmpty()) &&
                 (requestModel.getCompany() != null && !requestModel.getCompany().isEmpty()) &&
