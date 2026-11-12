@@ -3,6 +3,8 @@ package com.example.careercontactapi.JobPostingManagement.presentationlayer;
 import com.example.careercontactapi.JobApplicationManagement.businesslayer.JobApplicationService;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
 import com.example.careercontactapi.JobPostingManagement.businesslayer.JobPostingService;
+import com.example.careercontactapi.UserManagement.businesslayer.UserService;
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ public class AccountJobPostingController {
 
     private final JobPostingService jobPostingService;
     private final JobApplicationService jobApplicationService;
+    private final UserService userService;
 
     @GetMapping("")
     public ResponseEntity<List<JobPostingResponseModel>> getCreatedJobPostings(
@@ -32,6 +35,8 @@ public class AccountJobPostingController {
                     .status(HttpStatus.UNAUTHORIZED)
                     .build();
         }
+
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
 
         return ResponseEntity.ok(
                 jobPostingService.getJobPostingsByUserId(
@@ -51,6 +56,8 @@ public class AccountJobPostingController {
                     .build();
         }
 
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
+
         return ResponseEntity.ok(
                 jobPostingService.getJobPostingByIdAndUserId(
                         jobId,
@@ -69,6 +76,8 @@ public class AccountJobPostingController {
                     .status(HttpStatus.UNAUTHORIZED)
                     .build();
         }
+
+        userService.requireRole(principal.getSubject(), UserRole.RECRUITER);
 
         jobPostingService.getJobPostingByIdAndUserId(
                 jobId,

@@ -3,6 +3,7 @@ package com.example.careercontactapi.JobApplicationManagement;
 import com.example.careercontactapi.JobApplicationManagement.businesslayer.AccountApplicationService;
 import com.example.careercontactapi.JobApplicationManagement.datalayer.*;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.AccountApplicationController;
+import com.example.careercontactapi.UserManagement.businesslayer.UserService;
 import com.example.careercontactapi.JobPostingManagement.datalayer.*;
 import org.junit.jupiter.api.*;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -63,7 +64,7 @@ class AccountApplicationServiceTest {
     }
     @Test void controllerRequiresSessionAndDerivesIdentityFromPrincipal() {
         var backend = mock(AccountApplicationService.class);
-        var controller = new AccountApplicationController(backend);
+        var controller = new AccountApplicationController(backend, mock(UserService.class));
         assertEquals(401, controller.getApplications(null).getStatusCode().value());
         verifyNoInteractions(backend);
         var principal = mock(OidcUser.class); when(principal.getSubject()).thenReturn("user|one");

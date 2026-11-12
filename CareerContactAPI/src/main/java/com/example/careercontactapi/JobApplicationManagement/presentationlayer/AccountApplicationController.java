@@ -1,6 +1,8 @@
 package com.example.careercontactapi.JobApplicationManagement.presentationlayer;
 
 import com.example.careercontactapi.JobApplicationManagement.businesslayer.AccountApplicationService;
+import com.example.careercontactapi.UserManagement.businesslayer.UserService;
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,12 +18,15 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class AccountApplicationController {
     private final AccountApplicationService service;
+    private final UserService userService;
 
     @GetMapping
     public ResponseEntity<List<AccountApplicationResponseModel>> getApplications(
             @AuthenticationPrincipal OidcUser principal) {
         if (principal == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        userService.requireRole(principal.getSubject(), UserRole.JOB_SEEKER);
 
         return ResponseEntity
                 .ok()
@@ -37,6 +42,8 @@ public class AccountApplicationController {
         if (principal == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 
+        userService.requireRole(principal.getSubject(), UserRole.JOB_SEEKER);
+
         return ResponseEntity
                 .ok()
                 .cacheControl(org.springframework.http.CacheControl.noStore())
@@ -49,6 +56,8 @@ public class AccountApplicationController {
             @AuthenticationPrincipal OidcUser principal) {
         if (principal == null)
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        userService.requireRole(principal.getSubject(), UserRole.JOB_SEEKER);
 
         service.deleteApplication(principal.getSubject(), applicationId);
         return ResponseEntity.noContent().build();

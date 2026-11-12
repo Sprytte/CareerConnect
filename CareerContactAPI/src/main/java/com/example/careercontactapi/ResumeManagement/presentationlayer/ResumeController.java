@@ -2,6 +2,8 @@ package com.example.careercontactapi.ResumeManagement.presentationlayer;
 
 import com.example.careercontactapi.ResumeManagement.businesslayer.ResumeService;
 import com.example.careercontactapi.ResumeManagement.datalayer.ResumeFile;
+import com.example.careercontactapi.UserManagement.businesslayer.UserService;
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -25,6 +27,7 @@ import java.util.List;
 public class ResumeController {
 
     private final ResumeService resumeService;
+    private final UserService userService;
 
     @PostMapping
     public ResponseEntity<ResumeResponseModel> uploadResume(
@@ -99,6 +102,7 @@ public class ResumeController {
                     "Authentication is required"
             );
         }
+        userService.requireRole(principal.getSubject(), UserRole.JOB_SEEKER);
         return principal.getSubject();
     }
 }
