@@ -8,5 +8,6 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface UserRequestMapper {
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "role", ignore = true)
     User requestModelToEntity(UserRequestModel userRequestModel);
 }

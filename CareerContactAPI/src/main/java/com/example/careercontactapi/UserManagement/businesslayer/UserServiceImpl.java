@@ -3,6 +3,7 @@ package com.example.careercontactapi.UserManagement.businesslayer;
 import com.example.careercontactapi.UserManagement.datalayer.User;
 import com.example.careercontactapi.UserManagement.datalayer.UserRepository;
 import com.example.careercontactapi.UserManagement.datalayer.UserConstraintViolations;
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import com.example.careercontactapi.UserManagement.datamapperlayer.UserRequestMapper;
 import com.example.careercontactapi.UserManagement.datamapperlayer.UserResponseMapper;
 import com.example.careercontactapi.UserManagement.presentationlayer.UserRequestModel;
@@ -78,6 +79,65 @@ public class UserServiceImpl implements UserService {
                 throw e;
             }
             throw new ResponseStatusException(HttpStatus.CONFLICT, "This email address is already in use");
+        }
+    }
+
+    @Override
+    public UserResponseModel setRole(String userId, UserRole role) {
+        if (role == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "Choose whether you are a job seeker or a recruiter"
+            );
+        }
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User with userId: " + userId + " not found"
+                ));
+
+        // The role is chosen once, immediately after account creation. Changing
+        // it later would orphan postings or applications that belong to the old
+        // account type, so an explicit support process is safer than a silent swap.
+        if (user.getRole() != null) {
+            if (user.getRole() == role) {
+                return userResponseMapper.entityToResponseModel(user);
+            }
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "This account type has already been set"
+            );
+        }
+
+        user.setRole(role);
+        return userResponseMapper.entityToResponseModel(userRepository.saveAndFlush(user));
+    }
+
+    @Override
+    public void requireRole(String userId, UserRole role) {
+        if (userId == null || userId.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Sign in to continue");
+        }
+
+        User user = userRepository.findByUserId(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED,
+                        "Sign in again to continue"
+                ));
+
+        if (user.getRole() == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Choose your account type before using this feature"
+            );
+        }
+
+        if (user.getRole() != role) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "This action requires a " + role.getDisplayName() + " account"
+            );
         }
     }
 

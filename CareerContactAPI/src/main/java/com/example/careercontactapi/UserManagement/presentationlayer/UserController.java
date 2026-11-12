@@ -2,6 +2,7 @@ package com.example.careercontactapi.UserManagement.presentationlayer;
 
 
 import com.example.careercontactapi.UserManagement.businesslayer.UserService;
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,26 @@ public class UserController {
     ) {
         requireOwner(userId, principal);
         return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore()).body(userService.updateUser(userId, userUpdateRequestModel));
+    }
+
+    @PutMapping("/{userId}/role")
+    public ResponseEntity<UserResponseModel> chooseRole(
+            @PathVariable String userId,
+            @RequestBody(required = false) RoleUpdateRequestModel request,
+            @AuthenticationPrincipal OidcUser principal
+    ) {
+        requireOwner(userId, principal);
+
+        UserRole role;
+        try {
+            role = UserRole.from(request == null ? null : request.role());
+        } catch (IllegalArgumentException exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getMessage());
+        }
+
+        return ResponseEntity.ok()
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(userService.setRole(userId, role));
     }
 
     @PutMapping("/{userId}/password")

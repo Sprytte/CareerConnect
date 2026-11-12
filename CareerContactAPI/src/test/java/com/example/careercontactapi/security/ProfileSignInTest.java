@@ -2,6 +2,7 @@ package com.example.careercontactapi.security;
 
 import com.example.careercontactapi.UserManagement.datalayer.User;
 import com.example.careercontactapi.UserManagement.datalayer.UserRepository;
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,7 +66,7 @@ class ProfileSignInTest {
 
     private User existingProfile(String subject, String email) {
         return users.saveAndFlush(User.builder().userId(subject)
-                .name("Saved profile name").email(email).build());
+                .name("Saved profile name").email(email).role(UserRole.JOB_SEEKER).build());
     }
 
     @Test
@@ -95,15 +96,35 @@ class ProfileSignInTest {
         var session = signedInSession("auth0|separate", "second@example.test");
 
         mvc.perform(get("/api/v1/cc/security/redirect").session(session))
-                .andExpect(status().isFound()).andExpect(redirectedUrl("http://localhost:3000/"));
+                .andExpect(status().isFound()).andExpect(redirectedUrl("http://localhost:3000/onboarding/role"));
 
         assertFalse(session.isInvalid());
         assertEquals(2, users.count());
         var second = users.findByUserId("auth0|separate").orElseThrow();
         assertNotEquals(original.getId(), second.getId());
         assertEquals("second@example.test", second.getEmail());
+        assertNull(second.getRole());
         mvc.perform(get("/api/v1/cc/security/me").session(session))
-                .andExpect(status().isOk()).andExpect(jsonPath("$.userId").value("auth0|separate"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value("auth0|separate"))
+                .andExpect(jsonPath("$.permissions").isEmpty());
+    }
+
+    @Test
+    void firstSignInIsSentToRoleSelectionBeforeUsingTheAccount() throws Exception {
+        var session = signedInSession("auth0|new", "new@example.test");
+
+        mvc.perform(get("/api/v1/cc/security/redirect").session(session))
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("http://localhost:3000/onboarding/role"))
+                .andExpect(header().string("Cache-Control", "no-store"));
+
+        var created = users.findByUserId("auth0|new").orElseThrow();
+        assertNull(created.getRole());
+        mvc.perform(get("/api/v1/cc/security/me").session(session))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.userId").value("auth0|new"))
+                .andExpect(jsonPath("$.permissions").isEmpty());
     }
 
     @Test
