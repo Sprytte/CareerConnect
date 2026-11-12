@@ -1,3 +1,4 @@
+
 import { backendUrl } from '../constants'
 
 export type Job = {
@@ -11,8 +12,9 @@ export type Job = {
   salary: string
   dateCreated: string
   deadline: string
+  archived: boolean
 }
-export type JobInput = Omit<Job, 'id' | 'userId' | 'dateCreated'>
+export type JobInput = Omit<Job, 'id' | 'userId' | 'dateCreated' | 'archived'>
 
 export async function jobRequest<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch(`${backendUrl}${path}`, {
@@ -21,7 +23,12 @@ export async function jobRequest<T>(path: string, options: RequestInit = {}): Pr
     headers: { 'Content-Type': 'application/json', ...options.headers },
   })
   if (!response.ok) {
-    if (response.status === 409) throw new Error('You have already applied to this job.')
+    if (response.status === 409) {
+      if (path.endsWith('/archive')) {
+        throw new Error('This job posting is already archived.')
+      }
+      throw new Error('You have already applied to this job.')
+    }
     if (response.status === 401) throw new Error('Please sign in and try again.')
     if (response.status === 403) throw new Error('You do not have permission to do that.')
     if (response.status === 404) throw new Error('The requested job was not found.')
