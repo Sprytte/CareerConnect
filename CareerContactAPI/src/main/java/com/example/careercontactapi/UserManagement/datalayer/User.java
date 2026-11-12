@@ -26,4 +26,9 @@ public class User {
     @Nullable
     @Column(name = "profile_picture_url")
     private String pictureUrl;
+
+    @Nullable
+    @Enumerated(EnumType.STRING)
+    @Column(name = "role", length = 32)
+    private UserRole role;
 }

@@ -3,7 +3,8 @@ CREATE TABLE IF NOT EXISTS users (
     user_id VARCHAR(36) UNIQUE NOT NULL,
     "name" VARCHAR(255) NOT NULL,
     profile_picture_url VARCHAR(255) NULL,
-    email VARCHAR(255) UNIQUE NULL
+    email VARCHAR(255) UNIQUE NULL,
+    role VARCHAR(32) NULL
 );
 
 CREATE TABLE IF NOT EXISTS resumes (

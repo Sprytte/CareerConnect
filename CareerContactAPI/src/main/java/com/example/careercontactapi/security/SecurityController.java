@@ -7,6 +7,7 @@ import com.example.careercontactapi.security.usermodels.EmployeeResponseModel;
 import com.example.careercontactapi.security.usermodels.UserInfoResponseModel;
 import com.example.careercontactapi.UserManagement.businesslayer.UserService;
 import com.example.careercontactapi.UserManagement.presentationlayer.UserRequestModel;
+import com.example.careercontactapi.UserManagement.presentationlayer.UserResponseModel;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.dao.DataAccessException;
@@ -97,6 +98,18 @@ public class SecurityController {
             }
             log.info("Added the customer with userId: {}", principal.getSubject());
         }
+
+        UserResponseModel profile = userService.getUser(principal.getSubject());
+        if (profile.getRole() == null) {
+            // Auth0 has authenticated the identity, but the account type has not
+            // been chosen yet. Keep the session and finish setup in our own UI.
+            log.info("User {} has not chosen an account type yet", principal.getSubject());
+            return ResponseEntity.status(HttpStatus.FOUND)
+                    .cacheControl(CacheControl.noStore())
+                    .location(UriComponentsBuilder.fromUriString(frontendDomain)
+                            .replacePath("/onboarding/role").build().toUri())
+                    .build();
+        }
         /*if(!userService.userExists(principal.getSubject())){
             UserRequestModel customerRequestModel = UserRequestModel.builder()
                     .userId(principal.getSubject())
@@ -126,18 +139,14 @@ public class SecurityController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<UserInfoResponseModel> getCurrentUser(@AuthenticationPrincipal OidcUser principal) {
+    public ResponseEntity<UserResponseModel> getCurrentUser(@AuthenticationPrincipal OidcUser principal) {
         if (principal == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        var profile = userService.getUser(principal.getSubject());
-        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore()).body(UserInfoResponseModel.builder()
-                .userId(principal.getSubject())
-                .email(profile.getEmail())
-                .name(profile.getName())
-                .picture(profile.getPictureUrl())
-                .build());
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(userService.getUser(principal.getSubject()));
     }
 
     @GetMapping("/user-info/{userId}")

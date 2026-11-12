@@ -1,6 +1,9 @@
 package com.example.careercontactapi.UserManagement.presentationlayer;
 
+import com.example.careercontactapi.UserManagement.datalayer.UserRole;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,4 +15,6 @@ public class UserResponseModel {
     private String name;
     private String email;
     private String pictureUrl;
+    private UserRole role;
+    private List<String> permissions;
 }
