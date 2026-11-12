@@ -151,7 +151,7 @@ const Resume = () => {
   }
 
   useEffect(() => {
-    if (session.status === "signed-in") {
+    if (session.status === "signed-in" && session.user.role === "JOB_SEEKER") {
       loadResumes();
     } else if (session.status === "signed-out") {
       setResumes([]);
@@ -220,7 +220,6 @@ const Resume = () => {
       setMessage("Please select a resume first.");
       return;
     }
-
 
     const formData = new FormData();
     formData.append("file", resume);
@@ -315,6 +314,19 @@ const Resume = () => {
           <h2 className="resume-title">Resume Management</h2>
           <p className="resume-message">
             Account information is currently unavailable.
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  if (session.status === "signed-in" && session.user.role !== "JOB_SEEKER") {
+    return (
+      <section className="resume">
+        <div className="resume-container">
+          <h2 className="resume-title">Resume Management</h2>
+          <p className="resume-message">
+            Resume management is available to job seeker accounts.
           </p>
         </div>
       </section>

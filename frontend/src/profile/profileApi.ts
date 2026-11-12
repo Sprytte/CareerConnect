@@ -1,9 +1,12 @@
 import { backendUrl } from '../constants'
+import { isUserRole, type UserRole } from '../auth/roles'
 
 export type AccountProfile = {
   userId: string
   name: string
   email: string
+  role: UserRole | null
+  permissions: string[]
 }
 
 export class ProfileError extends Error {
@@ -68,7 +71,20 @@ async function readProfile(
       'We could not confirm your account details. Please try again.',
     )
   }
-  return { userId, name: profile.name.trim(), email: profile.email.trim() }
+  const role = isUserRole(profile.role) ? profile.role : null
+  const permissions = Array.isArray(profile.permissions)
+    ? profile.permissions.filter(
+        (permission): permission is string => typeof permission === 'string',
+      )
+    : []
+
+  return {
+    userId,
+    name: profile.name.trim(),
+    email: profile.email.trim(),
+    role,
+    permissions,
+  }
 }
 
 export async function loadProfile(
