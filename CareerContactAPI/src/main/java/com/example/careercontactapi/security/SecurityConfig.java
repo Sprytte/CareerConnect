@@ -74,6 +74,8 @@ public class SecurityConfig {
                         // .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.POST,"/api/v1/users/**")).authenticated()
                         // .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET,"/api/v1/users/**")).authenticated()
                         .requestMatchers(AntPathRequestMatcher.antMatcher(HttpMethod.GET, "/api/v1/cc/security/me")).authenticated()
+                        .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/users/**")).authenticated()
+                        .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/account/**")).authenticated()
                         .requestMatchers(AntPathRequestMatcher.antMatcher("/api/v1/resumes/**")).authenticated()
                         .anyRequest().permitAll()
                 )
@@ -81,7 +83,8 @@ public class SecurityConfig {
                     exceptionHandling.authenticationEntryPoint(authenticationEntryPoint());
                 })
                 .oauth2Login(httpSecurityOAuth2LoginConfigurer -> {
-                    httpSecurityOAuth2LoginConfigurer.loginPage("/oauth2/authorization/okta")
+                    httpSecurityOAuth2LoginConfigurer
+                            .loginPage("/oauth2/authorization/okta")
                             .failureUrl(UriComponentsBuilder.fromUriString(frontendDomain)
                                     .replacePath("/").replaceQuery("signin=failed").toUriString())
                             .defaultSuccessUrl(backendDomain + "api/v1/cc/security/redirect", true)
