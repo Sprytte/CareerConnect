@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useSession } from '../auth/session'
@@ -56,6 +57,7 @@ export function MyJobsPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [archivingId, setArchivingId] = useState<number | null>(null)
 
   async function loadJobs() {
     setLoading(true)
@@ -118,6 +120,32 @@ export function MyJobsPage() {
     }
   }
 
+  async function archiveJob(job: Job) {
+    const confirmed = window.confirm(
+      `Are you sure you want to archive "${job.jobName}"?`
+    )
+
+    if (!confirmed) return
+
+    setArchivingId(job.id)
+    setError('')
+
+    try {
+      const archivedJob = await jobRequest<Job>(
+        `/api/v1/account/job-postings/${job.id}/archive`,
+        { method: 'PATCH' }
+      )
+
+      setJobs(current =>
+        current.map(item => item.id === job.id ? archivedJob : item)
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not archive job.')
+    } finally {
+      setArchivingId(null)
+    }
+  }
+
   async function handleEdited() {
     setEditingJob(null)
     await loadJobs()
@@ -159,6 +187,7 @@ export function MyJobsPage() {
               ) : (
                 <>
                   <h2>{job.jobName}</h2>
+                  {job.archived && <p>Archived</p>}
                   <p>{job.company} · {job.location}</p>
                   <p>{job.description}</p>
                   <p>{job.category} · {job.salary}</p>
@@ -172,6 +201,14 @@ export function MyJobsPage() {
                       onClick={() => setEditingJob(job)}
                     >
                       Edit
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={job.archived || archivingId === job.id}
+                      onClick={() => archiveJob(job)}
+                    >
+                      {archivingId === job.id ? 'Archiving...' : job.archived ? 'Archived' : 'Archive'}
                     </button>
 
                     <button
