@@ -10,6 +10,10 @@ export type JobApplication = {
   company: string
   status: string | null
   appliedOn?: string | null // Calendar date, YYYY-MM-DD, when available.
+  // Editing and withdrawal details. Absent when the backend predates them.
+  resumeId?: number | null
+  deadline?: string | null // Posting deadline as a local ISO date-time.
+  modifiable?: boolean | null // Server decision: posting exists and is open.
 }
 
 export type ApplicationsResult =
@@ -46,6 +50,9 @@ export function isApplicationsResult(value: unknown): value is ApplicationsResul
     ids.add(id)
     return (application.status === null || typeof application.status === 'string')
       && (application.appliedOn == null || typeof application.appliedOn === 'string')
+      && (application.resumeId == null || typeof application.resumeId === 'number')
+      && (application.deadline == null || typeof application.deadline === 'string')
+      && (application.modifiable == null || typeof application.modifiable === 'boolean')
   })
 }
 

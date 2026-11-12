@@ -516,7 +516,12 @@ are excluded at the repository query. No session returns 401. The response is
 not cached (`Cache-Control: no-store`). An empty account returns `[]`.
 
 Each object has integer `id`, string `jobTitle`, string `company`, nullable
-string `status`, and nullable date-only `appliedOn` (`YYYY-MM-DD`). Posting details
+string `status`, and nullable date-only `appliedOn` (`YYYY-MM-DD`). For editing
+and withdrawal (issue #54) it also has integer `resumeId` (the resume currently
+attached), nullable `deadline` (the posting deadline as a local ISO date-time)
+and boolean `modifiable`, which is `true` only while the posting still exists
+and its deadline has not passed. The edit and withdraw endpoints below apply
+the same rule again on every request. Posting details
 are fetched in one batch. A deleted posting retains its application record with
 neutral missing-posting labels. Legacy `SUBMITTED`, `Offer`, and `Reject` map to
 `Applied`, `Offered`, and `Rejected`. Unknown statuses stay unknown and display
