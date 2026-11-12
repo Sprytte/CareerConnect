@@ -137,6 +137,7 @@ export function MyJobsPage() {
 
       <p className="job-links">
         <Link to="/">Home</Link>
+        <Link to="/account/jobs/applications">Applications received</Link>
       </p>
 
       {session.status !== 'signed-in' ? (
@@ -167,6 +168,13 @@ export function MyJobsPage() {
                   </p>
 
                   <div className="job-actions">
+                    <Link
+                      className="job-button"
+                      to={`/account/jobs/applications?job=${job.id}`}
+                    >
+                      View applications
+                    </Link>
+
                     <button
                       type="button"
                       onClick={() => setEditingJob(job)}
