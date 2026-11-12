@@ -1,3 +1,4 @@
+
 package com.example.careercontactapi.JobPostingManagement.presentationlayer;
 
 import lombok.*;
@@ -20,4 +21,5 @@ public class JobPostingResponseModel {
     String salary;
     LocalDateTime dateCreated;
     LocalDateTime deadline;
+    boolean archived;
 }

@@ -1,3 +1,4 @@
+
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id VARCHAR(36) UNIQUE NOT NULL,
@@ -26,7 +27,8 @@ CREATE TABLE IF NOT EXISTS job_postings (
     category VARCHAR(64) NOT NULL, -- full-time/part-time/contract/internship
     salary VARCHAR(64) NOT NULL, -- could be a range
     date_created TIMESTAMP NOT NULL,
-    deadline TIMESTAMP NOT NULL
+    deadline TIMESTAMP NOT NULL,
+    archived BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS job_applications (

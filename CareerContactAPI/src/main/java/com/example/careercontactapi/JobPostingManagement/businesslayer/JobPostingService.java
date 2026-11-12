@@ -1,3 +1,4 @@
+
 package com.example.careercontactapi.JobPostingManagement.businesslayer;
 
 import com.example.careercontactapi.JobPostingManagement.presentationlayer.JobPostingRequestModel;
@@ -23,6 +24,8 @@ public interface JobPostingService {
 );
 
 void deleteJobPosting(Integer jobId, String userId);
+
+JobPostingResponseModel archiveJobPosting(Integer jobId, String userId);
 
     List<JobPostingResponseModel> getJobPostingsByUserId(String userId);
 
