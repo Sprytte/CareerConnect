@@ -39,6 +39,21 @@
   line-height: 1.65;
 }
 
+.resume-feedback-link {
+  margin: -14px 0 26px;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.resume-feedback-link a {
+  color: #137773;
+}
+
+.resume-feedback-link a:hover {
+  text-decoration: underline;
+}
+
 .resume-upload-box {
   border: 2px dashed #b4c3cd;
   border-radius: 15px;
