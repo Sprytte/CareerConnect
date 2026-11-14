@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import "../styles/Resume.css";
 import { backendUrl } from "../constants";
 import { useSession } from "../auth/session";
@@ -329,6 +330,12 @@ const Resume = () => {
 
         <p className="resume-subtitle">
           Upload and manage your resumes for CareerConnect.
+        </p>
+
+        <p className="resume-feedback-link">
+          <Link to="/account/resume/feedback">
+            Get AI feedback on a resume <span aria-hidden="true">↗</span>
+          </Link>
         </p>
 
         <form onSubmit={handleUpload}>
