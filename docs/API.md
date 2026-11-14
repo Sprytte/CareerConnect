@@ -665,6 +665,60 @@ DELETE /api/v1/resumes/{resumeId}
 authenticated session, `403 Forbidden` when the resume belongs to another
 user, or `404 Not Found` when the resume does not exist.
 
+## AI resume feedback endpoint
+
+### Request feedback on a resume file
+
+**Request**
+
+```http
+POST /api/v1/resumes/feedback
+Content-Type: multipart/form-data
+```
+
+The multipart request must contain a `file` part with a PDF or DOCX resume up
+to 5 MB. Like the other `/api/v1/resumes/**` routes it requires an
+authenticated browser session (`credentials: "include"`).
+
+**Purpose**
+
+Sends the resume to the configured Generative AI service (Google Gemini) and
+returns structured feedback. A PDF is sent to the model as a document; for a
+DOCX file the text is extracted on the server and sent as plain text. The file
+is processed in memory: it is not stored and is not added to the user's saved
+resumes. The call can take up to a minute.
+
+**Configuration**
+
+| Environment variable | Required | Description |
+| --- | --- | --- |
+| `GEMINI_API_KEY` | Yes | Gemini API key. Never commit it. Without it the endpoint returns 503. |
+| `GEMINI_MODEL` | No | Model ID. Defaults to `gemini-3.8-flash`. |
+
+**Returns**
+
+`200 OK` with a `ResumeFeedbackResponseModel` JSON object and
+`Cache-Control: no-store`:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `fileName` | string | Name of the reviewed file. |
+| `summary` | string | Two or three sentences on the overall impression. |
+| `strengths` | string[] | What the resume already does well. May be empty. |
+| `improvements` | string[] | Specific suggested changes. May be empty. |
+
+Possible errors:
+
+| Status | Description |
+| --- | --- |
+| `400 Bad Request` | Missing, empty, oversized, unsupported or invalid file. |
+| `401 Unauthorized` | No authenticated browser session was supplied. |
+| `422 Unprocessable Entity` | The DOCX file contains no readable text. |
+| `429 Too Many Requests` | The AI service is rate limiting requests. |
+| `502 Bad Gateway` | The AI service failed or returned no usable feedback. |
+| `503 Service Unavailable` | The API key is missing or was rejected. |
+| `504 Gateway Timeout` | The AI service did not answer in time. |
+
 ## Current security behavior
 
 The routes and authentication infrastructure are configured in:
