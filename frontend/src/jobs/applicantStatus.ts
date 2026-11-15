@@ -5,6 +5,7 @@ export type Application = {
   id: number
   jobPostingId: number
   userId: string
+  applicantName?: string | null
   resumeId: number | null
   status: ApplicationStatus
   appliedAt: string
@@ -35,7 +36,9 @@ export function updateApplication(
   updated: Application
 ): Application[] {
   return applications.map(application =>
-    application.id === updated.id ? updated : application
+    application.id === updated.id
+      ? { ...application, ...updated, applicantName: updated.applicantName ?? application.applicantName }
+      : application
   )
 }
 

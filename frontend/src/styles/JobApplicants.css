@@ -181,3 +181,7 @@
     padding: 18px;
   }
 }
+
+.applicants-page .applications-refresh {
+  transform: translateY(-7px);
+}

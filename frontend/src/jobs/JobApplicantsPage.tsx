@@ -5,9 +5,11 @@ import { useSession } from '../auth/session'
 import SiteHeader from '../components/SiteHeader'
 import SiteFooter from '../components/SiteFooter'
 import { jobRequest, type Job } from './jobApi'
+import { backendUrl } from '../constants'
 import '../styles/App.css'
 import '../styles/Jobs.css'
 import '../styles/JobApplicants.css'
+import '../styles/Applications.css'
 
 import {
   decisions,
@@ -30,6 +32,8 @@ export default function JobApplicantsPage() {
   const [decision, setDecision] = useState<Decision>('Interview')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const [openingResume, setOpeningResume] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
@@ -82,6 +86,34 @@ export default function JobApplicantsPage() {
     application => application.id === selectedId
   )
 
+  async function refreshApplications() {
+    if (!validJobId || session.status !== 'signed-in' || refreshing || saving) {
+      return
+    }
+
+    setRefreshing(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const result = await jobRequest<Application[]>(
+        `/api/v1/account/job-postings/${jobId}/applications`,
+        { cache: 'no-store' }
+      )
+
+      setApplications(result)
+      setSelectedId(current =>
+        current !== null && result.some(application => application.id === current)
+          ? current
+          : null
+      )
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setRefreshing(false)
+    }
+  }
+
   function selectApplication(application: Application) {
     if (saving) return
 
@@ -120,6 +152,62 @@ export default function JobApplicantsPage() {
       setError(errorMessage(err))
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function viewResume() {
+    if (!selected || !validJobId || selected.resumeId == null || openingResume) {
+      return
+    }
+
+    // Open immediately to avoid browser popup blockers after awaiting fetch.
+    const previewWindow = window.open('', '_blank')
+    if (!previewWindow) {
+      setError('Please allow pop-ups to view the resume.')
+      return
+    }
+
+    setOpeningResume(true)
+    setError('')
+
+    try {
+      const response = await fetch(
+        `${backendUrl}/api/v1/account/job-postings/${jobId}/applications/${selected.id}/resume`,
+        { credentials: 'include', cache: 'no-store' }
+      )
+
+      if (!response.ok) {
+        if (response.status === 401) throw new Error('Please sign in and try again.')
+        if (response.status === 403) throw new Error('You do not have permission to view this resume.')
+        if (response.status === 404) throw new Error('This resume could not be found.')
+        throw new Error('Unable to open the resume.')
+      }
+
+      const blob = await response.blob()
+      const objectUrl = URL.createObjectURL(blob)
+      const contentType = response.headers.get('Content-Type') || blob.type
+
+      if (contentType.includes('pdf')) {
+        previewWindow.location.href = objectUrl
+        // Keep the URL alive while the browser loads the PDF.
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000)
+      } else {
+        previewWindow.close()
+
+        const link = document.createElement('a')
+        link.href = objectUrl
+        link.download = `applicant-resume-${selected.id}.docx`
+        document.body.appendChild(link)
+        link.click()
+        link.remove()
+
+        window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000)
+      }
+    } catch (err) {
+      previewWindow.close()
+      setError(errorMessage(err))
+    } finally {
+      setOpeningResume(false)
     }
   }
 
@@ -199,7 +287,18 @@ export default function JobApplicantsPage() {
             {!loading && job && applications.length > 0 && (
               <div className="applicants-grid">
                 <section className="applicants-panel">
-                  <h3>Applications</h3>
+                  <div className="applications-results-top">
+                    <h3>Applications</h3>
+                    <button
+                      className="applications-refresh"
+                      type="button"
+                      disabled={loading || refreshing || saving}
+                      onClick={() => void refreshApplications()}
+                    >
+                      <span aria-hidden="true">↻</span>
+                      {refreshing ? 'Refreshing...' : 'Refresh'}
+                    </button>
+                  </div>
 
                   <div className="applicants-list">
                     {applications.map(application => (
@@ -215,7 +314,9 @@ export default function JobApplicantsPage() {
                         onClick={() => selectApplication(application)}
                       >
                         <span>
-                          <strong>Application #{application.id}</strong>
+                          <strong>
+                            {application.applicantName?.trim() || `Application #${application.id}`}
+                          </strong>
                           <small>
                             {new Date(application.appliedAt)
                               .toLocaleDateString()}
@@ -237,7 +338,7 @@ export default function JobApplicantsPage() {
                     </div>
                   ) : (
                     <>
-                      <h3>Application #{selected.id}</h3>
+                      <h3>{selected.applicantName?.trim() || `Application #${selected.id}`}</h3>
 
                       <dl className="applicant-details">
                         <div>
@@ -252,8 +353,17 @@ export default function JobApplicantsPage() {
                           </dd>
                         </div>
                         <div>
-                          <dt>Resume ID</dt>
-                          <dd>{selected.resumeId ?? 'Not available'}</dd>
+                          <dt>Resume</dt>
+                          <dd>
+                            <button
+                              type="button"
+                              className="job-button"
+                              disabled={selected.resumeId == null || openingResume}
+                              onClick={() => void viewResume()}
+                            >
+                              {openingResume ? 'Opening...' : 'View Resume'}
+                            </button>
+                          </dd>
                         </div>
                         <div>
                           <dt>Current status</dt>

@@ -106,6 +106,25 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
+    public ResumeFile downloadResumeForApplicant(Integer resumeId, String applicantUserId) {
+        Resume resume = findOwnedResume(resumeId, applicantUserId);
+        Path filePath = Paths.get(storagePath, resume.getStoredFileName());
+
+        if (!Files.isRegularFile(filePath)) {
+            throw new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "Resume file not found"
+            );
+        }
+
+        return new ResumeFile(
+                new FileSystemResource(filePath),
+                resume.getOriginalFileName(),
+                resume.getContentType()
+        );
+    }
+
+    @Override
     public ResumeResponseModel updateResume(Integer resumeId, String newFilename, String authenticatedUserId) {
         Resume resume = findOwnedResume(resumeId, authenticatedUserId);
         if (newFilename == null || newFilename.isBlank()) {
