@@ -342,10 +342,6 @@ export default function JobApplicantsPage() {
 
                       <dl className="applicant-details">
                         <div>
-                          <dt>Applicant ID</dt>
-                          <dd>{selected.userId}</dd>
-                        </div>
-                        <div>
                           <dt>Application date</dt>
                           <dd>
                             {new Date(selected.appliedAt)
