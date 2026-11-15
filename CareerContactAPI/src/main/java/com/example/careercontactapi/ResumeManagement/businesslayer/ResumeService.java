@@ -10,6 +10,7 @@ public interface ResumeService {
     ResumeResponseModel uploadResumeForUser(String authenticatedUserId, MultipartFile file);
     List<ResumeResponseModel> getResumesForUser(String authenticatedUserId);
     ResumeFile downloadResumeForUser(Integer resumeId, String authenticatedUserId);
+    ResumeFile downloadResumeForApplicant(Integer resumeId, String applicantUserId);
     ResumeResponseModel updateResume(Integer resumeId, String newFilename, String authenticatedUserId);
     void deleteResumeForUser(Integer resumeId, String authenticatedUserId);
 }

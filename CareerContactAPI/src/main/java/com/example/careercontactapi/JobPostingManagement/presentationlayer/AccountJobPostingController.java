@@ -2,8 +2,9 @@
 package com.example.careercontactapi.JobPostingManagement.presentationlayer;
 
 import com.example.careercontactapi.JobApplicationManagement.businesslayer.JobApplicationService;
-import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
+import com.example.careercontactapi.JobApplicationManagement.presentationlayer.RecruiterApplicationResponseModel;
 import com.example.careercontactapi.JobPostingManagement.businesslayer.JobPostingService;
+import com.example.careercontactapi.UserManagement.businesslayer.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -23,6 +24,7 @@ public class AccountJobPostingController {
 
     private final JobPostingService jobPostingService;
     private final JobApplicationService jobApplicationService;
+    private final UserService userService;
 
     @GetMapping("")
     public ResponseEntity<List<JobPostingResponseModel>> getCreatedJobPostings(
@@ -80,7 +82,7 @@ public class AccountJobPostingController {
     }
 
     @GetMapping("/{jobId}/applications")
-    public ResponseEntity<List<JobApplicationResponseModel>> getApplicationsForJobPosting(
+    public ResponseEntity<List<RecruiterApplicationResponseModel>> getApplicationsForJobPosting(
             @AuthenticationPrincipal OidcUser principal,
             @PathVariable Integer jobId
     ) {
@@ -95,8 +97,26 @@ public class AccountJobPostingController {
                 principal.getSubject()
         );
 
-        return ResponseEntity.ok(
+        List<RecruiterApplicationResponseModel> applications =
                 jobApplicationService.getApplicationsByJobPostingId(jobId)
-        );
+                        .stream()
+                        .map(application -> {
+                            String applicantName = userService
+                                    .getUser(application.userId())
+                                    .getName();
+
+                            return new RecruiterApplicationResponseModel(
+                                    application.id(),
+                                    application.jobPostingId(),
+                                    application.userId(),
+                                    applicantName,
+                                    application.resumeId(),
+                                    application.status(),
+                                    application.appliedAt()
+                            );
+                        })
+                        .toList();
+
+        return ResponseEntity.ok(applications);
     }
 }
