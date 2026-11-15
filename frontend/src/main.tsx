@@ -11,6 +11,7 @@ import { NewJobPage, MyJobsPage } from './jobs/JobPages'
 import PostingApplicationsPage from './jobs/PostingApplicationsPage'
 import ApplyJobPage from './jobs/ApplyJobPage'
 import SearchJobs from './components/SearchJobs'
+import JobApplicantsPage from './jobs/JobApplicantsPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -26,6 +27,7 @@ createRoot(document.getElementById('root')!).render(
           <Route path="/account/jobs/applications" element={<PostingApplicationsPage />} />
           <Route path="/jobs/:jobId/apply" element={<ApplyJobPage />} />
           <Route path="/jobs" element={<SearchJobs />} />
+          <Route path="/account/jobs/:jobId/applications" element={<JobApplicantsPage />} />
         </Routes>
       </BrowserRouter>
     </SessionProvider>
