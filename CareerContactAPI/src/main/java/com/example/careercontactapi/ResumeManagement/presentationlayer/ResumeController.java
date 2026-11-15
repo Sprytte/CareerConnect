@@ -24,7 +24,6 @@ import java.util.List;
 @RequestMapping("/api/v1/resumes")
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class ResumeController {
-
     private final ResumeService resumeService;
     private final UserService userService;
 

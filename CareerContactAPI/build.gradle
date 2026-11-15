@@ -37,11 +37,11 @@ dependencies {
     implementation 'org.json:json:20231013' // json
     implementation 'javax.xml.bind:jaxb-api:2.4.0-b180830.0359'
     implementation 'com.okta.spring:okta-spring-boot-starter:3.0.5' // auth
-    implementation "org.apache.httpcomponents.client5:httpclient5:5.2.1"
+    implementation "org.apache.httpcomponents.client5:httpclient5"
     implementation 'commons-io:commons-io:2.11.0'
     implementation 'com.squareup.okhttp3:okhttp:3.14.0' // auth
     implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310' // mapper
-    implementation 'org.springframework.boot:spring-boot-starter-mail:3.1.2'
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.amazonaws:aws-java-sdk:1.12.429'
 
     compileOnly 'org.projectlombok:lombok'
