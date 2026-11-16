@@ -2,6 +2,7 @@ import { backendUrl } from '../constants'
 import type { Job } from './jobApi'
 import { normalizeStatus } from './postingApplicationsView'
 import type { PostingEntry, ReceivedState } from './postingApplicationsView'
+import type { Application as RecruiterApplication } from './applicantStatus'
 
 // Reads the signed-in recruiter's postings and the applications received on
 // each one. Both endpoints derive the owner from the session.
@@ -89,7 +90,9 @@ export async function loadReceivedApplications(
     if (!Array.isArray(data)) return { status: 'error' }
     const applications = data.map(parseApplication)
     if (applications.some((application) => application === null)) return { status: 'error' }
-    return { status: 'ready', applications: applications as Application[] }
+    // The page shows unknown statuses and missing dates as they are, so the
+    // parsed values are looser than the status-update type it shares.
+    return { status: 'ready', applications: applications as unknown as RecruiterApplication[] }
   } catch (error) {
     if (error instanceof SessionExpired) throw error
     if (signal.aborted) throw error
