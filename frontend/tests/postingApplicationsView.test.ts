@@ -182,6 +182,7 @@ describe('buildView sorting', () => {
 
   it('sorts postings by number of applications, unknown counts last', () => {
     assert.deepEqual(sortedPostings('applications-desc'), [1, 2, 3, 4])
+    assert.deepEqual(sortedPostings('applications-asc'), [3, 2, 1, 4])
   })
 
   it('sorts applications by date applied', () => {

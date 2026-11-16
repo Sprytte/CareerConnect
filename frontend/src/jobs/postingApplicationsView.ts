@@ -40,6 +40,7 @@ export const postingSorts = [
   { value: 'status-open', label: 'Status: open postings first' },
   { value: 'status-closed', label: 'Status: closed postings first' },
   { value: 'applications-desc', label: 'Most applications first' },
+  { value: 'applications-asc', label: 'Fewest applications first' },
 ] as const
 export type PostingSort = (typeof postingSorts)[number]['value']
 
@@ -152,6 +153,8 @@ function comparePostings(a: VisiblePosting, b: VisiblePosting, sort: PostingSort
     case 'status-open': return Number(b.status === 'Open') - Number(a.status === 'Open') || newestFirst
     case 'status-closed': return Number(a.status === 'Open') - Number(b.status === 'Open') || newestFirst
     case 'applications-desc': return (b.total ?? -1) - (a.total ?? -1) || newestFirst
+    case 'applications-asc':
+      return (a.total ?? Number.MAX_SAFE_INTEGER) - (b.total ?? Number.MAX_SAFE_INTEGER) || newestFirst
     default: return newestFirst
   }
 }
