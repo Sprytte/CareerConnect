@@ -12,9 +12,10 @@ import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.Generated;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
@@ -35,7 +36,8 @@ public class EmailServiceImpl implements EmailService{
     private final UserRepository userRepository;
     private final JobPostingRepository jobPostingRepository;
     @Value("${spring.mail.username}")
-    private String sender;
+    @Setter
+    public String sender;
     Session session;
 
     @Generated

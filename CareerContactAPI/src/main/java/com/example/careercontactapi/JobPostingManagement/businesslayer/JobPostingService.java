@@ -21,11 +21,11 @@ public interface JobPostingService {
         Integer jobId,
         JobPostingRequestModel jobPostingRequestModel,
         String userId
-);
+    );
 
-void deleteJobPosting(Integer jobId, String userId);
+    void deleteJobPosting(Integer jobId, String userId);
 
-JobPostingResponseModel archiveJobPosting(Integer jobId, String userId);
+    JobPostingResponseModel archiveJobPosting(Integer jobId, String userId);
 
     List<JobPostingResponseModel> getJobPostingsByUserId(String userId);
 
