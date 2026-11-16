@@ -4,6 +4,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import type { Job } from '../src/jobs/jobApi.ts'
+import type { Application } from '../src/jobs/applicantStatus.ts'
 import {
   buildView, dateRangeProblem, defaultFilters, defaultSorting, hasActiveFilters,
   normalizeStatus, postingStatus,
@@ -24,7 +25,8 @@ function job(id: number, dateCreated: string, deadline: string): Job {
 function received(...applications: [number, string | null, string | null][]): PostingEntry['received'] {
   return {
     status: 'ready',
-    applications: applications.map(([id, status, appliedAt]) => ({ id, status, appliedAt })),
+    // Only the fields the filter and sort rules read are needed here.
+    applications: applications.map(([id, status, appliedAt]) => ({ id, status, appliedAt }) as unknown as Application),
   }
 }
 
