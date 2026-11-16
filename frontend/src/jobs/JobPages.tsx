@@ -230,12 +230,6 @@ export function MyJobsPage() {
                     >
                       View applications
                     </Link>
-                    <Link
-                      className="job-button"
-                      to={`/account/jobs/${job.id}/applications`}
-                    >
-                      View applicants
-                    </Link>
                     <button
                       type="button"
                       onClick={() => setEditingJob(job)}

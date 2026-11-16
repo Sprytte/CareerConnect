@@ -13,7 +13,6 @@ import RoleGate from './auth/RoleGate'
 import { NewJobPage, MyJobsPage } from './jobs/JobPages'
 import PostingApplicationsPage from './jobs/PostingApplicationsPage'
 import ApplyJobPage from './jobs/ApplyJobPage'
-import JobApplicantsPage from './jobs/JobApplicantsPage'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -24,15 +23,14 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/" element={<App />} />
             <Route path="/onboarding/role" element={<RoleSelection />} />
             <Route path="/jobs" element={<SearchJobs />} />
+            <Route path="/jobs/:jobId/apply" element={<ApplyJobPage />} />
             <Route path="/account" element={<Account />} />
             <Route path="/account/resume" element={<Resume />} />
             <Route path="/account/applications" element={<Applications />} />
             <Route path="/jobs/new" element={<NewJobPage />} />
             <Route path="/account/jobs" element={<MyJobsPage />} />
             <Route path="/account/jobs/applications" element={<PostingApplicationsPage />} />
-            <Route path="/jobs/:jobId/apply" element={<ApplyJobPage />} />
-            <Route path="/account/jobs/:jobId/applications" element={<JobApplicantsPage />} />
-          </Routes>
+            </Routes>
         </RoleGate>
       </BrowserRouter>
     </SessionProvider>

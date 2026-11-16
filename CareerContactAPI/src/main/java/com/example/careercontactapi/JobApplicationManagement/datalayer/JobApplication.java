@@ -32,4 +32,11 @@ public class JobApplication {
 
     @Column(name = "applied_at", nullable = false)
     private LocalDateTime appliedAt;
+
+    @Column(name = "interview_time_slot")
+    private LocalDateTime interviewTimeSlot;
+
+    @Column(name = "interview_alerted", nullable = false)
+    @Builder.Default
+    private boolean interviewAlerted = false;
 }

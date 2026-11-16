@@ -17,6 +17,7 @@ const application: Application = {
   resumeId: 8,
   status: 'Applied',
   appliedAt: '2026-11-10T12:00:00Z',
+  interviewTimeSlot: null
 }
 
 describe('Applicant status management', () => {
@@ -36,21 +37,21 @@ describe('Applicant status management', () => {
   })
 
   it('preserves an existing decision', () => {
-    assert.equal(defaultDecision('Offer'), 'Offer')
+    assert.equal(defaultDecision('Offered'), 'Offered')
     assert.equal(defaultDecision('Reject'), 'Reject')
     assert.equal(defaultDecision('Interview'), 'Interview')
   })
 
-  it('allows changing an application status', () => {
-    assert.equal(canUpdateStatus(application, 'Interview', false), true)
+  it('prevents changing an application status without valid interview time', () => {
+    assert.equal(canUpdateStatus(application, 'Interview', '', false), false)
   })
 
   it('prevents saving when no application is selected', () => {
-    assert.equal(canUpdateStatus(undefined, 'Interview', false), false)
+    assert.equal(canUpdateStatus(undefined, 'Interview', '', false), false)
   })
 
   it('prevents saving while another update is running', () => {
-    assert.equal(canUpdateStatus(application, 'Interview', true), false)
+    assert.equal(canUpdateStatus(application, 'Interview', '', true), false)
   })
 
   it('prevents saving the same status', () => {
@@ -59,16 +60,16 @@ describe('Applicant status management', () => {
       status: 'Interview',
     }
 
-    assert.equal(canUpdateStatus(interviewed, 'Interview', false), false)
+    assert.equal(canUpdateStatus(interviewed, 'Interview', '', false), false)
   })
 
   it('updates only the selected application', () => {
     const other: Application = { ...application, id: 13 }
-    const updated: Application = { ...application, status: 'Offer' }
+    const updated: Application = { ...application, status: 'Offered' }
 
     const result = updateApplication([application, other], updated)
 
-    assert.equal(result[0].status, 'Offer')
+    assert.equal(result[0].status, 'Offered')
     assert.equal(result[1].status, 'Applied')
   })
 
@@ -87,7 +88,7 @@ describe('Applicant status management', () => {
     const updated: Application = {
       ...application,
       id: 999,
-      status: 'Offer',
+      status: 'Offered',
     }
 
     const result = updateApplication([application], updated)

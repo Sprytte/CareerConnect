@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 19px;
+            font-weight: 760;
+            letter-spacing: -.05em;
+            white-space: nowrap;
+        }
+        .brand-mark {
+            display: grid;
+            place-items: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 11px;
+            background: #16213b;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -.06em;
+        }
+        .brand-accent {
+            color: #168b87;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>You have an interview soon!</h1>
+    <div>
+        <strong>Hello, <span class="brand-accent">${username}!</span></strong>
+        <p>You have an upcoming interview for '${jobName}' at '${interviewTime}'.</p>
+    </div>
+</main>
+<footer>
+    <p class="brand">
+            <span class="brand-mark" aria-hidden="true">
+                C
+            </span>
+
+        <span>
+                Career<span class="brand-accent">Connect</span>
+            </span>
+    </p>
+    <p style="font-size: small">
+        Made for your next move.
+    </p>
+
+</footer>
+</body>
+</html>

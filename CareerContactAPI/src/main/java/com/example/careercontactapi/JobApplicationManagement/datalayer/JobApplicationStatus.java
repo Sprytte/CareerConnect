@@ -7,7 +7,7 @@ import java.util.Optional;
 public enum JobApplicationStatus {
     APPLIED("Applied"),
     INTERVIEW("Interview"),
-    OFFER("Offer"),
+    OFFERED("Offered"),
     REJECT("Reject");
 
     private final String value;

@@ -40,6 +40,10 @@ public class JobPosting {
 
     private LocalDateTime deadline;
 
+    @Column(name = "deadline_alerted", nullable = false)
+    @Builder.Default
+    private boolean deadlineAlerted = false;
+
     @Column(name = "archived", nullable = false)
     @Builder.Default
     private boolean archived = false;
