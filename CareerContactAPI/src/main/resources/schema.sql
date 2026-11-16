@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS job_postings (
     salary VARCHAR(64) NOT NULL, -- could be a range
     date_created TIMESTAMP NOT NULL,
     deadline TIMESTAMP NOT NULL,
-    archived BOOLEAN NOT NULL DEFAULT FALSE
+    archived BOOLEAN NOT NULL DEFAULT FALSE,
+    deadline_alerted BOOLEAN NOT NULL DEFAULT FALSE
 );
 
 CREATE TABLE IF NOT EXISTS job_applications (
@@ -39,5 +40,6 @@ CREATE TABLE IF NOT EXISTS job_applications (
     status VARCHAR(32) NOT NULL,
     applied_at TIMESTAMP NOT NULL,
     interview_time_slot TIMESTAMP,
+    interview_alerted BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (job_posting_id, user_id)
 );

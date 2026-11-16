@@ -1,6 +1,4 @@
-import { defaultSorting } from "./postingApplicationsView"
-
-export type ApplicationStatus = 'Applied' | 'Interview' | 'Offer' | 'Reject'
+export type ApplicationStatus = 'Applied' | 'Interview' | 'Offered' | 'Reject'
 export type Decision = Exclude<ApplicationStatus, 'Applied'>
 
 export type Application = {
@@ -14,7 +12,7 @@ export type Application = {
   interviewTimeSlot: string | null
 }
 
-export const decisions: Decision[] = ['Interview', 'Offer', 'Reject']
+export const decisions: Decision[] = ['Interview', 'Offered', 'Reject']
 
 export function isValidJobId(jobId: string | undefined): boolean {
   return jobId !== undefined && /^[1-9]\d*$/.test(jobId)
@@ -30,10 +28,12 @@ export function canUpdateStatus(
   interviewTimeSlot: string,
   saving: boolean
 ): boolean {
-  const time = new Date(interviewTimeSlot)
-  return application !== undefined && !saving && ((application.status !== decision && ((decision === 'Interview' &&
-      isTimeValid(time) && application.interviewTimeSlot !== interviewTimeSlot) || decision !== 'Interview')) || 
-      decision === 'Interview' && isTimeValid(time) && application.interviewTimeSlot !== interviewTimeSlot)
+  console.log(decision)
+  const newTime = new Date(interviewTimeSlot)
+  const oldTime = new Date(application?.interviewTimeSlot ?? '')
+  return application !== undefined && !saving && (((application.status !== decision && decision !== 'Interview') || 
+    (application.status !== decision && decision === 'Interview' && isTimeValid(newTime) && oldTime !== newTime)) || 
+      (decision === 'Interview' && isTimeValid(newTime) && oldTime !== newTime))
 }
 
 function isTimeValid(time: Date): boolean {

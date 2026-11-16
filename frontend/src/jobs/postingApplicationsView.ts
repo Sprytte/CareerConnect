@@ -160,7 +160,6 @@ export function buildView(
   sorting: Sorting,
   now: number,
 ): View {
-  console.log(entries);
   // An invalid range is reported next to the inputs and not applied.
   const dated = dateRangeProblem(filters) === null
     ? filters

@@ -19,7 +19,7 @@ import type {
 } from './postingApplicationsView'
 import { jobRequest } from './jobApi'
 import { backendUrl } from '../constants'
-import { decisions, canUpdateStatus, updateApplication, defaultDecision, errorMessage } from './applicantStatus'
+import { decisions, canUpdateStatus, defaultDecision, errorMessage } from './applicantStatus'
 import type { Application, Decision } from './applicantStatus'
 import '../styles/App.css'
 import '../styles/Jobs.css'
@@ -252,6 +252,7 @@ function PostingCard({ posting, narrowed, retrying, onRetry, onApplicationUpdate
 
     setSelectedId(application.id)
     setSelected(application)
+    setDecision(defaultDecision(application.status))
     setError('')
     setSuccess('')
   }
@@ -282,6 +283,7 @@ function PostingCard({ posting, narrowed, retrying, onRetry, onApplicationUpdate
 
       await onApplicationUpdated()
       setSuccess(`Application #${selected.id} updated to ${updated.status}.`)
+      setInterviewTime('')
     } catch (err) {
       setError(errorMessage(err))
     } finally {
@@ -401,9 +403,8 @@ function PostingCard({ posting, narrowed, retrying, onRetry, onApplicationUpdate
                 <div  key={application.id}
                       className={selectedId === application.id
                           ? 'applicant-item selected'
-                          : 'applicant-item'}
-                      onClick={() => selectApplication(application)}>
-                  <div className='applicant-item-row'>
+                          : 'applicant-item'}>
+                  <div className='applicant-item-row' onClick={() => selectApplication(application)}>
                     <span className="posting-application-name">{application.applicantName?.trim() || `Application #${application.id}`}</span>
                     <span className="posting-application-date">
                       Applied{' '}
