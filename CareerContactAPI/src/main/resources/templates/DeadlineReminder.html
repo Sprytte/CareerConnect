@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 19px;
+      font-weight: 760;
+      letter-spacing: -.05em;
+      white-space: nowrap;
+    }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 11px;
+      background: #16213b;
+      color: white;
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -.06em;
+    }
+    .brand-accent {
+      color: #168b87;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Your deadline is almost here!</h1>
+  <div>
+    <strong>Hello, <span class="brand-accent">${username}!</span></strong>
+    <p>The deadline for job '${jobName}' is swiftly approaching, make sure to submit your final changes before then!</p>
+    <p>View your application <a href="http://localhost:3000/account/applications/${applicationId}">here</a></p>
+    <p>To view a list of all your applications, click <a href="http://localhost:3000/account/applications">here</a></p>
+  </div>
+</main>
+<footer>
+  <p class="brand">
+            <span class="brand-mark" aria-hidden="true">
+                C
+            </span>
+
+    <span>
+                Career<span class="brand-accent">Connect</span>
+            </span>
+  </p>
+  <p style="font-size: small">
+    Made for your next move.
+  </p>
+
+</footer>
+</body>
+</html>

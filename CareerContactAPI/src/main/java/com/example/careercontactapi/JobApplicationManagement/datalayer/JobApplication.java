@@ -35,4 +35,8 @@ public class JobApplication {
 
     @Column(name = "interview_time_slot")
     private LocalDateTime interviewTimeSlot;
+
+    @Column(name = "interview_alerted", nullable = false)
+    @Builder.Default
+    private boolean interviewAlerted = false;
 }

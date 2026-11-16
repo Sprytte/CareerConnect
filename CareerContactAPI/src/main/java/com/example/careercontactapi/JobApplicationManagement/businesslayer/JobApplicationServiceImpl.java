@@ -93,6 +93,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .appliedAt(LocalDateTime.now())
                 .build();
 
+        emailService.sendNewApplicantAlert(application, jobPosting);
         return toResponseModel(jobApplicationRepository.save(application));
     }
 
@@ -142,7 +143,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
         if (applicationStatus == null) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
-                    "Status must be one of: Interview, Offer, Reject"
+                    "Status must be one of: Interview, Offered, Reject"
             );
         }
 
@@ -174,6 +175,8 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 );
             }
             application.setInterviewTimeSlot(requestModel.interviewTimeSlot());
+        } else {
+            application.setInterviewTimeSlot(null);
         }
 
         application.setStatus(applicationStatus.value());

@@ -8,26 +8,34 @@ import com.example.careercontactapi.UserManagement.datalayer.UserRepository;
 import jakarta.mail.Authenticator;
 import jakarta.mail.PasswordAuthentication;
 import jakarta.mail.Session;
-import lombok.AllArgsConstructor;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.transaction.Transactional;
 import lombok.Generated;
 import lombok.extern.slf4j.Slf4j;
-//import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.IOUtils;
+import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.io.InputStream;
 import java.util.Properties;
 
 
 @Slf4j
+@Transactional
 @Service
 public class EmailServiceImpl implements EmailService{
     private final JavaMailSender mailSender;
     private final UserRepository userRepository;
     private final JobPostingRepository jobPostingRepository;
+    @Value("${spring.mail.username}")
+    private String sender;
     Session session;
 
     @Generated
@@ -69,55 +77,155 @@ public class EmailServiceImpl implements EmailService{
 
     @Override
     public void sendUpdatedJobApplicationAlert(JobApplication jobApplication) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        User user = userRepository.getReferenceById(jobApplication.getId());
+        User user = userRepository.findByUserId(jobApplication.getUserId()).orElseThrow(() ->
+            new ResponseStatusException(
+                    HttpStatus.NOT_FOUND,
+                    "User not found"
+        ));
         JobPosting jobPosting = jobPostingRepository.getReferenceById(jobApplication.getJobPostingId());
 
-        message.setTo(user.getEmail());
-        message.setSubject("Your application has been updated!");
+        MimeMessage message = mailSender.createMimeMessage();
 
-        String body = "Hello " + user.getName() + "!" +
-                    "\nThe status of your application for '" + jobPosting.getJobName() + "' has been updated " +
-                    "and is now '" + jobApplication.getStatus() + "'." +
-                    "\nTo view your application, " +
-                    "<a href=\"http://localhost:3000/account/applications/" + jobApplication.getId() +
-                    ">click here</a>";
-        message.setText(body);
+        try {
+            message.setFrom(new InternetAddress(sender));
+            message.setRecipients(MimeMessage.RecipientType.TO, user.getEmail());
+            message.setSubject("Your application has been updated!");
+
+            InputStream resource = new ClassPathResource("/templates/ApplicationUpdate.html").getInputStream();
+            String htmlTemplate = IOUtils.toString(resource, "UTF-8");
+
+            htmlTemplate = htmlTemplate.replace("${username}", user.getName());
+            htmlTemplate = htmlTemplate.replace("${jobName}", jobPosting.getJobName());
+            htmlTemplate = htmlTemplate.replace("${jobStatus}", jobApplication.getStatus());
+            htmlTemplate = htmlTemplate.replace("${applicationId}", Integer.toString(jobApplication.getId()));
+
+            message.setContent(htmlTemplate, "text/html; charset=utf-8");
+        } catch (Exception e){
+            throw new RuntimeException("Error sending email: " + e.getMessage());
+        }
 
         mailSender.send(message);
     }
 
-    //todo example on using an html template for the email content
-//    @Override
-//    public void sendOrderConfirmation(Transaction transaction) {
-//        MimeMessage message = mailSender.createMimeMessage();
-//
-//        try {
-//            message.setFrom(new InternetAddress(sender));
-//            message.setRecipients(MimeMessage.RecipientType.TO, transaction.getEmail());
-//            message.setSubject("Thank you for your order!");
-//
-//            InputStream resource = new ClassPathResource("/templates/OrderPlaced.html").getInputStream();
-//            String htmlTemplate = IOUtils.toString(resource, "UTF-8");
-//
-//            htmlTemplate = htmlTemplate.replace("${orderId}", transaction.getTransactionId());
-//            htmlTemplate = htmlTemplate.replace("${customerName}", transaction.getFirstName());
-//            htmlTemplate = htmlTemplate.replace("${items}", getItems(transaction.getTransactionId()));
-//
-//            double sub = transaction.getAmount();
-//            double shipping = transaction.getShippingCost();
-//            double taxes = (transaction.getAmount() + transaction.getShippingCost()) * 0.15;
-//            htmlTemplate = htmlTemplate.replace("${subtotal}", String.format("%,.2f$", sub));
-//            htmlTemplate = htmlTemplate.replace("${shipping}", String.format("%,.2f$", shipping));
-//            htmlTemplate = htmlTemplate.replace("${taxes}", String.format("%,.2f$", taxes));
-//            htmlTemplate = htmlTemplate.replace("${total}", String.format("%,.2f$", sub + shipping + taxes));
-//
-//            message.setContent(htmlTemplate, "text/html; charset=utf-8");
-//        } catch (Exception e){
-//            throw new RuntimeException("Error sending email: " + e.getMessage());
-//        }
-//
-//        mailSender.send(message);
-//    }
+    @Override
+    public void sendUpcomingInterviewReminder(JobApplication jobApplication, JobPosting jobPosting) {
+        User applicant = userRepository.findByUserId(jobApplication.getUserId()).orElseThrow(() ->
+                new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found"
+                ));
+        User recruiter = userRepository.findByUserId(jobPosting.getUserId()).orElseThrow(() ->
+                new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found"
+        ));
+
+        MimeMessage message = mailSender.createMimeMessage();
+
+        try {
+            message.setFrom(new InternetAddress(sender));
+            message.setRecipients(MimeMessage.RecipientType.TO, applicant.getEmail());
+            message.setSubject("You have an upcoming interview!");
+
+            InputStream resource = new ClassPathResource("/templates/InterviewReminder.html").getInputStream();
+            String htmlTemplate = IOUtils.toString(resource, "UTF-8");
+
+            htmlTemplate = htmlTemplate.replace("${username}", applicant.getName());
+            htmlTemplate = htmlTemplate.replace("${jobName}", jobPosting.getJobName());
+            htmlTemplate = htmlTemplate.replace("${interviewTime}", jobApplication.getInterviewTimeSlot().toString());
+            htmlTemplate = htmlTemplate.replace("${applicationId}", Integer.toString(jobApplication.getId()));
+
+            message.setContent(htmlTemplate, "text/html; charset=utf-8");
+        } catch (Exception e){
+            throw new RuntimeException("Error sending email: " + e.getMessage());
+        }
+
+        mailSender.send(message);
+
+        try {
+            message.setRecipients(MimeMessage.RecipientType.TO, recruiter.getEmail());
+
+            InputStream resource = new ClassPathResource("/templates/InterviewReminder.html").getInputStream();
+            String htmlTemplate = IOUtils.toString(resource, "UTF-8");
+
+            htmlTemplate = htmlTemplate.replace("${username}", recruiter.getName());
+            htmlTemplate = htmlTemplate.replace("${jobName}", jobPosting.getJobName());
+            htmlTemplate = htmlTemplate.replace("${interviewTime}", jobApplication.getInterviewTimeSlot().toString());
+            htmlTemplate = htmlTemplate.replace("${applicationId}", Integer.toString(jobApplication.getId()));
+
+            message.setContent(htmlTemplate, "text/html; charset=utf-8");
+        } catch (Exception e){
+            throw new RuntimeException("Error sending email: " + e.getMessage());
+        }
+
+        mailSender.send(message);
+    }
+
+    @Override
+    public void sendUpcomingDeadlineReminder(JobApplication jobApplication) {
+        User user = userRepository.findByUserId(jobApplication.getUserId()).orElseThrow(() ->
+                new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found"
+                ));
+        JobPosting jobPosting = jobPostingRepository.getReferenceById(jobApplication.getJobPostingId());
+
+        MimeMessage message = mailSender.createMimeMessage();
+
+        try {
+            message.setFrom(new InternetAddress(sender));
+            message.setRecipients(MimeMessage.RecipientType.TO, user.getEmail());
+            message.setSubject("Upcoming deadline!");
+
+            InputStream resource = new ClassPathResource("/templates/DeadlineReminder.html").getInputStream();
+            String htmlTemplate = IOUtils.toString(resource, "UTF-8");
+
+            htmlTemplate = htmlTemplate.replace("${username}", user.getName());
+            htmlTemplate = htmlTemplate.replace("${jobName}", jobPosting.getJobName());
+            htmlTemplate = htmlTemplate.replace("${applicationId}", Integer.toString(jobApplication.getId()));
+
+            message.setContent(htmlTemplate, "text/html; charset=utf-8");
+        } catch (Exception e){
+            throw new RuntimeException("Error sending email: " + e.getMessage());
+        }
+
+        mailSender.send(message);
+    }
+
+    @Override
+    public void sendNewApplicantAlert(JobApplication jobApplication, JobPosting jobPosting) {
+        User applicant = userRepository.findByUserId(jobApplication.getUserId()).orElseThrow(() ->
+                new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "User not found"
+                ));
+        User recruiter = userRepository.findByUserId(jobPosting.getUserId()).orElseThrow(() ->
+                new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "User not found"
+        ));
+
+        MimeMessage message = mailSender.createMimeMessage();
+
+        try {
+            message.setFrom(new InternetAddress(sender));
+            message.setRecipients(MimeMessage.RecipientType.TO, recruiter.getEmail());
+            message.setSubject("Your application has been updated!");
+
+            InputStream resource = new ClassPathResource("/templates/ApplicationUpdate.html").getInputStream();
+            String htmlTemplate = IOUtils.toString(resource, "UTF-8");
+
+            htmlTemplate = htmlTemplate.replace("${username}", recruiter.getName());
+            htmlTemplate = htmlTemplate.replace("${jobName}", jobPosting.getJobName());
+            htmlTemplate = htmlTemplate.replace("${jobId}", Integer.toString(jobPosting.getId()));
+            htmlTemplate = htmlTemplate.replace("${applicantName}", applicant.getName());
+
+            message.setContent(htmlTemplate, "text/html; charset=utf-8");
+        } catch (Exception e){
+            throw new RuntimeException("Error sending email: " + e.getMessage());
+        }
+
+        mailSender.send(message);
+    }
 
 }
