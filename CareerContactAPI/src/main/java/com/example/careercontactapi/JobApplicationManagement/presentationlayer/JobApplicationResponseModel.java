@@ -8,6 +8,7 @@ public record JobApplicationResponseModel(
         String userId,
         Integer resumeId,
         String status,
-        LocalDateTime appliedAt
+        LocalDateTime appliedAt,
+        LocalDateTime interviewTimeSlot
 ) {
 }

@@ -17,6 +17,10 @@ import {
 import type {
   ApplicationSort, DateField, Filters, PostingEntry, PostingSort, Sorting, VisiblePosting,
 } from './postingApplicationsView'
+import { jobRequest } from './jobApi'
+import { backendUrl } from '../constants'
+import { decisions, canUpdateStatus, updateApplication, defaultDecision, errorMessage } from './applicantStatus'
+import type { Application, Decision } from './applicantStatus'
 import '../styles/App.css'
 import '../styles/Jobs.css'
 import '../styles/Applications.css'
@@ -218,11 +222,12 @@ function Toolbar({ filters, sorting, onFilters, onSorting }: {
   )
 }
 
-function PostingCard({ posting, narrowed, retrying, onRetry }: {
+function PostingCard({ posting, narrowed, retrying, onRetry, onApplicationUpdated }: {
   posting: VisiblePosting
   narrowed: boolean
   retrying: boolean
   onRetry: () => void
+  onApplicationUpdated: () => Promise<void>
 }) {
   const id = useId()
   const [open, setOpen] = useState(true)
@@ -233,12 +238,128 @@ function PostingCard({ posting, narrowed, retrying, onRetry }: {
       ? `${applications.length} of ${count(total, 'application')} shown`
       : count(total, 'application')
 
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+  const [selected, setSelected] = useState<Application | undefined>(undefined)
+  const [decision, setDecision] = useState<Decision>('Interview')
+  const [interviewTime, setInterviewTime] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [openingResume, setOpeningResume] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+
+  function selectApplication(application: Application) {
+    if (saving) return
+
+    setSelectedId(application.id)
+    setSelected(application)
+    setError('')
+    setSuccess('')
+  }
+
+  async function updateStatus() {
+    if (!selected || !canUpdateStatus(selected, decision, interviewTime, saving)) {
+      return
+    }
+
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const updated = await jobRequest<Application>(
+        `/api/v1/account/job-postings/${job.id}/applications`,
+        {
+          method: 'PUT',
+          body: JSON.stringify({
+            applicationId: selected.id,
+            status: decision,
+            ...(decision === 'Interview' && interviewTime
+              ? { interviewTimeSlot: `${interviewTime}:00` }
+              : {}),
+          }),
+        }
+      )
+
+      await onApplicationUpdated()
+      setSuccess(`Application #${selected.id} updated to ${updated.status}.`)
+    } catch (err) {
+      setError(errorMessage(err))
+    } finally {
+      setSaving(false)
+    }
+  }
+  
+  async function viewResume() {
+      if (!selected || selected.resumeId == null || openingResume) {
+        return
+      }
+  
+      // Open immediately to avoid browser popup blockers after awaiting fetch.
+      const previewWindow = window.open('', '_blank')
+      if (!previewWindow) {
+        setError('Please allow pop-ups to view the resume.')
+        return
+      }
+  
+      setOpeningResume(true)
+      setError('')
+  
+      try {
+        const response = await fetch(
+          `${backendUrl}/api/v1/account/job-postings/${job.id}/applications/${selected.id}/resume`,
+          { credentials: 'include', cache: 'no-store' }
+        )
+  
+        if (!response.ok) {
+          if (response.status === 401) throw new Error('Please sign in and try again.')
+          if (response.status === 403) throw new Error('You do not have permission to view this resume.')
+          if (response.status === 404) throw new Error('This resume could not be found.')
+          throw new Error('Unable to open the resume.')
+        }
+  
+        const blob = await response.blob()
+        const objectUrl = URL.createObjectURL(blob)
+        const contentType = response.headers.get('Content-Type') || blob.type
+  
+        if (contentType.includes('pdf')) {
+          previewWindow.location.href = objectUrl
+          // Keep the URL alive while the browser loads the PDF.
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000)
+        } else {
+          previewWindow.close()
+  
+          const link = document.createElement('a')
+          link.href = objectUrl
+          link.download = `applicant-resume-${selected.id}.docx`
+          document.body.appendChild(link)
+          link.click()
+          link.remove()
+  
+          window.setTimeout(() => URL.revokeObjectURL(objectUrl), 60000)
+        }
+      } catch (err) {
+        previewWindow.close()
+        setError(errorMessage(err))
+      } finally {
+        setOpeningResume(false)
+      }
+    }
+
   return (
     <li className="posting-card">
       <div className="posting-card-top">
         <div className="posting-card-main">
           <span className="posting-company">{job.company}{job.location ? ` · ${job.location}` : ''}</span>
           <h3>{job.jobName}</h3>
+          {error && (
+              <p role="alert" className="job-error">{error}</p>
+            )}
+
+            {success && (
+              <p role="status" className="applicants-success">
+                {success}
+              </p>
+            )}
           <p className="posting-dates">
             Posted <time dateTime={job.dateCreated}>{formatDay(job.dateCreated)}</time>
             <span aria-hidden="true"> · </span>
@@ -277,16 +398,82 @@ function PostingCard({ posting, narrowed, retrying, onRetry }: {
           ) : (
             <ul className="posting-application-list" aria-label={`Applications for ${job.jobName}`}>
               {applications.map((application) => (
-                <li className="posting-application" key={application.id}>
-                  <span className="posting-application-name">Application #{application.id}</span>
-                  <span className="posting-application-date">
-                    Applied{' '}
-                    {application.appliedAt
-                      ? <time dateTime={application.appliedAt}>{formatMoment(application.appliedAt)}</time>
-                      : 'date unavailable'}
-                  </span>
-                  <ApplicationStatusBadge status={application.status} />
-                </li>
+                <div  key={application.id}
+                      className={selectedId === application.id
+                          ? 'applicant-item selected'
+                          : 'applicant-item'}
+                      onClick={() => selectApplication(application)}>
+                  <div className='applicant-item-row'>
+                    <span className="posting-application-name">{application.applicantName?.trim() || `Application #${application.id}`}</span>
+                    <span className="posting-application-date">
+                      Applied{' '}
+                      {application.appliedAt
+                        ? <time dateTime={application.appliedAt}>{formatMoment(application.appliedAt)}</time>
+                        : 'date unavailable'}
+                    </span>
+                    {application.interviewTimeSlot && <span className="posting-application-date">
+                      Interview {' '}
+                      {application.interviewTimeSlot
+                        ? <time dateTime={application.interviewTimeSlot}>{formatMoment(application.interviewTimeSlot)}</time>
+                        : 'date unavailable'}
+                    </span>}
+                    <ApplicationStatusBadge status={application.status} />
+                  </div>
+                  {selectedId === application.id && 
+                    <div className='applicant-update'>
+                      <button
+                        type="button"
+                        className="job-button"
+                        disabled={selected?.resumeId == null || openingResume}
+                        onClick={() => void viewResume()}
+                      >
+                        {openingResume ? 'Opening...' : 'View Resume'}
+                      </button>
+
+                      <div>
+                        <label htmlFor="applicant-decision">
+                          Update application status
+                        </label>
+
+                        <select id="applicant-decision"
+                                defaultValue={defaultDecision(application.status)}
+                                disabled={saving || application.status === 'Reject'}
+                                onChange={event =>
+                                  setDecision(event.target.value as Decision)
+                                }
+                        >
+                          {decisions.map(status => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+
+                        {decision === 'Interview' && 
+                          <input
+                            required
+                            type='datetime-local'
+                            value={interviewTime}
+                            disabled={saving}
+                            onChange={e =>
+                              setInterviewTime(e.target.value)
+                            }
+                          />
+                        }
+
+                        <button
+                          type="button"
+                          className={canUpdateStatus(selected, decision, interviewTime, saving)
+                                      ? 'job-button' : 'job-button.disabled'}
+                          disabled={!canUpdateStatus(selected, decision, interviewTime, saving)}
+                          onClick={() => void updateStatus()}
+                        >
+                          {saving ? 'Saving...' : 'Save changes'}
+                        </button>
+                      </div>
+                    </div>
+                  }
+                </div>
               ))}
             </ul>
           )}
@@ -426,6 +613,7 @@ function PostingApplicationsData() {
               narrowed={narrowed}
               retrying={retrying === posting.job.id}
               onRetry={() => retryPosting(posting.job.id)}
+              onApplicationUpdated={() => retryPosting(posting.job.id)}
             />
           ))}
         </ul>

@@ -31,8 +31,7 @@ public class JobApplicationController {
         return ResponseEntity.ok(jobApplicationService.updateApplicationStatus(
                 jobId,
                 principal.getSubject(),
-                requestModel.applicationId(),
-                requestModel.status()
+                requestModel
         ));
     }
 }

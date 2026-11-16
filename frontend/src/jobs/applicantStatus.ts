@@ -1,3 +1,5 @@
+import { defaultSorting } from "./postingApplicationsView"
+
 export type ApplicationStatus = 'Applied' | 'Interview' | 'Offer' | 'Reject'
 export type Decision = Exclude<ApplicationStatus, 'Applied'>
 
@@ -9,6 +11,7 @@ export type Application = {
   resumeId: number | null
   status: ApplicationStatus
   appliedAt: string
+  interviewTimeSlot: string | null
 }
 
 export const decisions: Decision[] = ['Interview', 'Offer', 'Reject']
@@ -23,12 +26,18 @@ export function defaultDecision(status: ApplicationStatus): Decision {
 
 export function canUpdateStatus(
   application: Application | undefined,
-  decision: Decision,
+  decision: Decision | null,
+  interviewTimeSlot: string,
   saving: boolean
 ): boolean {
-  return application !== undefined &&
-    !saving &&
-    application.status !== decision
+  const time = new Date(interviewTimeSlot)
+  return application !== undefined && !saving && ((application.status !== decision && ((decision === 'Interview' &&
+      isTimeValid(time) && application.interviewTimeSlot !== interviewTimeSlot) || decision !== 'Interview')) || 
+      decision === 'Interview' && isTimeValid(time) && application.interviewTimeSlot !== interviewTimeSlot)
+}
+
+function isTimeValid(time: Date): boolean {
+ return Number.isFinite(time.getTime()) && time.getTime() > Date.now()
 }
 
 export function updateApplication(

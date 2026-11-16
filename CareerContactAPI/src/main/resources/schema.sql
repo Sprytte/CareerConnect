@@ -38,5 +38,6 @@ CREATE TABLE IF NOT EXISTS job_applications (
     resume_id INTEGER NOT NULL,
     status VARCHAR(32) NOT NULL,
     applied_at TIMESTAMP NOT NULL,
+    interview_time_slot TIMESTAMP,
     UNIQUE (job_posting_id, user_id)
 );

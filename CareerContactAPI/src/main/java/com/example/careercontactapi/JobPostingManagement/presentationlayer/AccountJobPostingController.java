@@ -122,7 +122,8 @@ public class AccountJobPostingController {
                                     applicantName,
                                     application.resumeId(),
                                     application.status(),
-                                    application.appliedAt()
+                                    application.appliedAt(),
+                                    application.interviewTimeSlot()
                             );
                         })
                         .toList();
