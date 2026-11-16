@@ -17,7 +17,7 @@ const now = new Date('2026-11-09T12:00:00').getTime()
 function job(id: number, dateCreated: string, deadline: string): Job {
   return {
     id, userId: 'recruiter', jobName: `Job ${id}`, company: 'Fixture employer', description: '',
-    location: '', category: '', salary: '', dateCreated, deadline,
+    location: '', category: '', salary: '', dateCreated, deadline, archived: false,
   }
 }
 

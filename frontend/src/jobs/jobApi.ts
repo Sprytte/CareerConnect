@@ -1,5 +1,5 @@
 
-import { backendUrl } from '../constants'
+import { backendUrl } from '../constants.ts'
 
 export type Job = {
   id: number
