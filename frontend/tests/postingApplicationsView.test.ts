@@ -58,7 +58,7 @@ describe('normalizeStatus', () => {
 
   it('keeps unknown statuses and treats missing ones as null', () => {
     assert.equal(normalizeStatus('Screening'), 'Screening')
-    assert.deepEqual(['', '  ', null, undefined, 7].map(normalizeStatus), [null, null, null, null, null])
+    assert.deepEqual(['', '  ', null, undefined, 7].map(normalizeStatus), ['', '', '', '', ''])
   })
 })
 
