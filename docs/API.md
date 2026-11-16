@@ -722,7 +722,7 @@ DELETE /api/v1/resumes/{resumeId}
 authenticated session, `403 Forbidden` when the resume belongs to another
 user, or `404 Not Found` when the resume does not exist.
 
-## AI resume feedback endpoint
+## AI resume feedback endpoints
 
 ### Request feedback on a resume file
 
@@ -771,6 +771,46 @@ Possible errors:
 | `400 Bad Request` | Missing, empty, oversized, unsupported or invalid file. |
 | `401 Unauthorized` | No authenticated browser session was supplied. |
 | `422 Unprocessable Entity` | The DOCX file contains no readable text. |
+| `429 Too Many Requests` | The AI service is rate limiting requests. |
+| `502 Bad Gateway` | The AI service failed or returned no usable feedback. |
+| `503 Service Unavailable` | The API key is missing or was rejected. |
+| `504 Gateway Timeout` | The AI service did not answer in time. |
+
+### Request feedback on a saved resume
+
+**Request**
+
+```http
+POST /api/v1/resumes/{resumeId}/feedback
+```
+
+The account-scoped form
+`POST /api/v1/account/resumes/{resumeId}/feedback` is also supported. Both
+routes require an authenticated job seeker session and return the same
+response shape as the file-upload route above.
+
+**Purpose**
+
+Reads the resume stored for the authenticated user, sends it to the configured
+Generative AI service and returns structured feedback. The client sends no file
+and no `userId`; the server resolves both the owner and the stored file from the
+session and `resumeId`. This endpoint does not create, change or delete the
+resume.
+
+**Returns**
+
+`200 OK` with a `ResumeFeedbackResponseModel` JSON object and
+`Cache-Control: no-store`.
+
+Possible errors:
+
+| Status | Description |
+| --- | --- |
+| `400 Bad Request` | The resume ID is missing/invalid, or the stored file is empty, oversized, unsupported or invalid. |
+| `401 Unauthorized` | No authenticated browser session was supplied. |
+| `403 Forbidden` | The resume belongs to another user, or the account is not a job seeker. |
+| `404 Not Found` | The resume row or its stored file does not exist. |
+| `422 Unprocessable Entity` | The stored DOCX file contains no readable text. |
 | `429 Too Many Requests` | The AI service is rate limiting requests. |
 | `502 Bad Gateway` | The AI service failed or returned no usable feedback. |
 | `503 Service Unavailable` | The API key is missing or was rejected. |
