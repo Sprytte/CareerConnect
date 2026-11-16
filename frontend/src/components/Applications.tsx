@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { loginUrl, useSession } from '../auth/session'
 import {
-  applicationStatuses, formatAppliedDate, isApplicationsResult,
+  applicationStatuses, countApplications, filterApplications, formatAppliedDate, isApplicationsResult, toggleApplicationFilter,
 } from '../applications/applications'
 import type { ApplicationStatus, ApplicationsLoader, ApplicationsResult, JobApplication } from '../applications/applications'
 import { loadApplications } from '../applications/loadApplications'
@@ -164,7 +164,7 @@ function ApplicationList({ applications, filter, onFilter }: {
   filter: Filter
   onFilter: (filter: Filter) => void
 }) {
-  const visible = applications.filter((application) => filter === 'All' || application.status === filter)
+  const visible = filterApplications(applications, filter)
   return (
     <>
       <div className="applications-filters" role="group" aria-label="Filter applications by status">
@@ -174,11 +174,11 @@ function ApplicationList({ applications, filter, onFilter }: {
             type="button"
             className="applications-filter"
             aria-pressed={filter === status}
-            onClick={() => onFilter(status)}
+            onClick={() => onFilter(toggleApplicationFilter(filter, status))}
           >
             {status}
             <span className="applications-filter-count">
-              {status === 'All' ? applications.length : applications.filter((item) => item.status === status).length}
+              {countApplications(applications, status)}
             </span>
           </button>
         ))}
