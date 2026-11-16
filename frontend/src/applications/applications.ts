@@ -57,3 +57,21 @@ export function formatAppliedDate(value: string | null | undefined): string | nu
     month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC',
   }).format(date)
 }
+
+export type ApplicationFilter = 'All' | ApplicationStatus
+
+export function countApplications(applications: JobApplication[], filter: ApplicationFilter): number {
+  return filter === 'All'
+    ? applications.length
+    : applications.filter((application) => application.status === filter).length
+}
+
+export function filterApplications(applications: JobApplication[], filter: ApplicationFilter): JobApplication[] {
+  return filter === 'All'
+    ? applications
+    : applications.filter((application) => application.status === filter)
+}
+
+export function toggleApplicationFilter(current: ApplicationFilter, selected: ApplicationFilter): ApplicationFilter {
+  return current === selected ? 'All' : selected
+}
