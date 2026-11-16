@@ -49,7 +49,6 @@ function parseJob(value: unknown): Job | null {
     dateCreated: text('dateCreated'),
     deadline: text('deadline'),
     archived: Boolean('archived')
-    archived: record.archived === true,
   }
 }
 
