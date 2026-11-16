@@ -61,9 +61,7 @@ export function formatAppliedDate(value: string | null | undefined): string | nu
 export type ApplicationFilter = 'All' | ApplicationStatus
 
 export function countApplications(applications: JobApplication[], filter: ApplicationFilter): number {
-  return filter === 'All'
-    ? applications.length
-    : applications.filter((application) => application.status === filter).length
+  return filterApplications(applications, filter).length
 }
 
 export function filterApplications(applications: JobApplication[], filter: ApplicationFilter): JobApplication[] {
