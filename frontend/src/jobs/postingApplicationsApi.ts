@@ -1,10 +1,20 @@
 import { backendUrl } from '../constants'
 import type { Job } from './jobApi'
 import { normalizeStatus } from './postingApplicationsView'
-import type { PostingEntry, ReceivedApplication, ReceivedState } from './postingApplicationsView'
+import type { PostingEntry, ReceivedState } from './postingApplicationsView'
 
 // Reads the signed-in recruiter's postings and the applications received on
 // each one. Both endpoints derive the owner from the session.
+export type Application = {
+  id: number
+  jobPostingId: number
+  userId: string
+  applicantName?: string | null
+  resumeId: number | null
+  status: string
+  appliedAt: string | null
+  interviewTimeSlot: string | null
+}
 
 export type PostingApplicationsResult =
   | { status: 'ready'; entries: PostingEntry[] }
@@ -38,19 +48,32 @@ function parseJob(value: unknown): Job | null {
     salary: text('salary'),
     dateCreated: text('dateCreated'),
     deadline: text('deadline'),
+    archived: Boolean('archived')
     archived: record.archived === true,
   }
 }
 
-function parseApplication(value: unknown): ReceivedApplication | null {
+function parseApplication(value: unknown): Application | null {
   if (typeof value !== 'object' || value === null) return null
   const record = value as Record<string, unknown>
   if (typeof record.id !== 'number' || !Number.isSafeInteger(record.id)) return null
+  if (typeof record.jobPostingId !== 'number' || !Number.isSafeInteger(record.jobPostingId)) return null
+  if (typeof record.resumeId !== 'number' || !Number.isSafeInteger(record.resumeId)) return null
   return {
     id: record.id,
+    jobPostingId: record.jobPostingId,
+    userId: parseString(record.userId) ?? '',
+    applicantName: parseString(record.applicantName),
+    resumeId: record.resumeId,
+    interviewTimeSlot: parseString(record.interviewTimeSlot),
     status: normalizeStatus(record.status),
-    appliedAt: typeof record.appliedAt === 'string' ? record.appliedAt : null,
+    appliedAt: parseString(record.appliedAt),
   }
+}
+
+function parseString(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  else return value;
 }
 
 // One posting's applications. A failure here is reported on that posting only,
@@ -67,7 +90,7 @@ export async function loadReceivedApplications(
     if (!Array.isArray(data)) return { status: 'error' }
     const applications = data.map(parseApplication)
     if (applications.some((application) => application === null)) return { status: 'error' }
-    return { status: 'ready', applications: applications as ReceivedApplication[] }
+    return { status: 'ready', applications: applications as Application[] }
   } catch (error) {
     if (error instanceof SessionExpired) throw error
     if (signal.aborted) throw error

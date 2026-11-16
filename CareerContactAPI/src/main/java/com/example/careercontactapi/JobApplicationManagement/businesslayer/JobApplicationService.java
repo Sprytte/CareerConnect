@@ -2,6 +2,7 @@ package com.example.careercontactapi.JobApplicationManagement.businesslayer;
 
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationRequestModel;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
+import com.example.careercontactapi.JobApplicationManagement.presentationlayer.UpdateJobApplicationRequestModel;
 
 import java.util.List;
 
@@ -20,7 +21,6 @@ public interface JobApplicationService {
     JobApplicationResponseModel updateApplicationStatus(
             Integer jobId,
             String ownerId,
-            Integer applicationId,
-            String status
+            UpdateJobApplicationRequestModel requestModel
     );
 }

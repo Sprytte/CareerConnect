@@ -6,10 +6,13 @@ import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplic
 import com.example.careercontactapi.JobApplicationManagement.datalayer.JobApplicationStatus;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationRequestModel;
 import com.example.careercontactapi.JobApplicationManagement.presentationlayer.JobApplicationResponseModel;
+import com.example.careercontactapi.JobApplicationManagement.presentationlayer.UpdateJobApplicationRequestModel;
 import com.example.careercontactapi.JobPostingManagement.datalayer.JobPosting;
 import com.example.careercontactapi.JobPostingManagement.datalayer.JobPostingRepository;
+import com.example.careercontactapi.MailManagement.EmailService;
 import com.example.careercontactapi.ResumeManagement.datalayer.Resume;
 import com.example.careercontactapi.ResumeManagement.datalayer.ResumeRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -18,21 +21,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class JobApplicationServiceImpl implements JobApplicationService {
-
     private final JobApplicationRepository jobApplicationRepository;
     private final JobPostingRepository jobPostingRepository;
     private final ResumeRepository resumeRepository;
-
-    public JobApplicationServiceImpl(
-            JobApplicationRepository jobApplicationRepository,
-            JobPostingRepository jobPostingRepository,
-            ResumeRepository resumeRepository
-    ) {
-        this.jobApplicationRepository = jobApplicationRepository;
-        this.jobPostingRepository = jobPostingRepository;
-        this.resumeRepository = resumeRepository;
-    }
+    private final EmailService emailService;
 
     @Override
     public JobApplicationResponseModel applyToJobPosting(
@@ -117,9 +111,11 @@ public class JobApplicationServiceImpl implements JobApplicationService {
     public JobApplicationResponseModel updateApplicationStatus(
             Integer jobId,
             String ownerId,
-            Integer applicationId,
-            String status
+            UpdateJobApplicationRequestModel requestModel
     ) {
+        Integer applicationId = requestModel.applicationId();
+        String status = requestModel.status();
+
         JobPosting jobPosting = jobPostingRepository.findById(jobId)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
@@ -164,7 +160,24 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 );
         }
 
+        if (applicationStatus.equals(JobApplicationStatus.INTERVIEW)) {
+            if (requestModel.interviewTimeSlot() == null) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "A time slot must be offered when changing the application status to 'Interview'"
+                );
+            }
+            if (requestModel.interviewTimeSlot().isBefore(LocalDateTime.now())) {
+                throw new ResponseStatusException(
+                        HttpStatus.BAD_REQUEST,
+                        "Time slot must be in the future."
+                );
+            }
+            application.setInterviewTimeSlot(requestModel.interviewTimeSlot());
+        }
+
         application.setStatus(applicationStatus.value());
+        emailService.sendUpdatedJobApplicationAlert(application);
         return toResponseModel(jobApplicationRepository.save(application));
     }
 
@@ -175,7 +188,8 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 application.getUserId(),
                 application.getResumeId(),
                 application.getStatus(),
-                application.getAppliedAt()
+                application.getAppliedAt(),
+                application.getInterviewTimeSlot()
         );
     }
 }

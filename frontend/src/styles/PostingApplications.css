@@ -304,6 +304,69 @@
   color: #526078;
 }
 
+.applicant-item {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fff;
+  color: #1f2937;
+  text-align: left;
+  cursor: pointer;
+}
+
+.applicant-item:hover {
+  background: #f8faff;
+}
+
+.applicant-item.selected {
+  background: #eef2ff;
+  border-color: #5367cf;
+}
+
+.applicant-item-row {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+}
+
+.applicant-update {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  label {
+    font-weight: 600;
+  }
+
+  select, input {
+    padding: 10px 12px;
+    border: 1px solid #d0d5dd;
+    border-radius: 9px;
+    background: #fff;
+    font: inherit;
+  }
+
+  div {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  button {
+    font-size: medium;
+    padding: 8px 15px;
+    font-weight: 550;
+  }
+}
+
 @media (max-width: 600px) {
   .posting-card {
     padding: 20px;

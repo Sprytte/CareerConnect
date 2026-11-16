@@ -1,20 +1,15 @@
 // Explicit .ts extensions let Node run this module directly in the unit tests.
 import { applicationStatuses } from '../applications/applications.ts'
 import type { ApplicationStatus } from '../applications/applications.ts'
+import type { Application } from './applicantStatus.ts'
 import type { Job } from './jobApi.ts'
 
 // Task 11.3: filtering and sorting for the recruiter's "applications received"
 // page. Everything here is a pure function of the loaded data so the rules can
 // be checked without a browser.
 
-export type ReceivedApplication = {
-  id: number
-  status: string | null // One of applicationStatuses when recognised.
-  appliedAt: string | null // Local ISO date-time from the backend.
-}
-
 export type ReceivedState =
-  | { status: 'ready'; applications: ReceivedApplication[] }
+  | { status: 'ready'; applications: Application[] }
   | { status: 'error' }
 
 export type PostingEntry = { job: Job; received: ReceivedState }
@@ -63,7 +58,7 @@ export type VisiblePosting = {
   status: PostingStatus
   // null when this posting's applications could not be loaded.
   total: number | null
-  applications: ReceivedApplication[]
+  applications: Application[]
 }
 
 export type View = {
@@ -74,8 +69,8 @@ export type View = {
 }
 
 // The recruiter endpoint returns stored values, including older ones.
-export function normalizeStatus(value: unknown): string | null {
-  if (typeof value !== 'string' || !value.trim()) return null
+export function normalizeStatus(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) return ''
   switch (value.trim().toUpperCase()) {
     case 'SUBMITTED':
     case 'APPLIED': return 'Applied'
@@ -132,7 +127,7 @@ function statusRank(status: string | null): number {
   return index === -1 ? applicationStatuses.length : index
 }
 
-function sortApplications(items: ReceivedApplication[], sort: ApplicationSort): ReceivedApplication[] {
+function sortApplications(items: Application[], sort: ApplicationSort): Application[] {
   return [...items].sort((a, b) => {
     if (sort === 'status') {
       const byStatus = statusRank(a.status) - statusRank(b.status)
@@ -165,6 +160,7 @@ export function buildView(
   sorting: Sorting,
   now: number,
 ): View {
+  console.log(entries);
   // An invalid range is reported next to the inputs and not applied.
   const dated = dateRangeProblem(filters) === null
     ? filters
