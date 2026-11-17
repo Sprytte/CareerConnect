@@ -627,7 +627,8 @@ the request body and provide one of the allowed statuses:
 ```json
 {
   "applicationId": 1,
-  "status": "Interview"
+  "status": "Interview",
+  "interviewTimeSlot": null
 }
 ```
 
@@ -636,6 +637,11 @@ application. It returns `401 Unauthorized` without an authenticated user,
 `403 Forbidden` when the user does not own the job posting, `404 Not Found`
 when the job posting or application does not exist, and `400 Bad Request` for
 a missing or invalid status/application ID.
+
+When updating to `Interview`, `interviewTimeSlot` is a required field and
+should contain a datetime string of when the recruiter wishes to hold the
+interview.
+
 
 ## Resume endpoints
 
