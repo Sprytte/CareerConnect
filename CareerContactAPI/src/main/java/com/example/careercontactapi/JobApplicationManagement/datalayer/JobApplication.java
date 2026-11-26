@@ -1,3 +1,4 @@
+
 package com.example.careercontactapi.JobApplicationManagement.datalayer;
 
 import jakarta.persistence.*;
@@ -39,4 +40,7 @@ public class JobApplication {
     @Column(name = "interview_alerted", nullable = false)
     @Builder.Default
     private boolean interviewAlerted = false;
+
+    @Column(name = "notes")
+    private String notes;
 }

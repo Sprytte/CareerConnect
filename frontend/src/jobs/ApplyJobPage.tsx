@@ -1,3 +1,4 @@
+
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useSession } from '../auth/session'
@@ -28,6 +29,7 @@ export default function ApplyJobPage() {
   const [choice, setChoice] = useState<ResumeChoice>('recent')
   const [selectedResumeId, setSelectedResumeId] = useState('')
   const [file, setFile] = useState<File | null>(null)
+  const [notes, setNotes] = useState('')
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -181,7 +183,7 @@ export default function ApplyJobPage() {
         `/api/v1/job-postings/${jobId}/apply`,
         {
           method: 'POST',
-          body: JSON.stringify({ resumeId }),
+          body: JSON.stringify({ resumeId, notes: notes.trim() }),
         }
       )
 
@@ -366,6 +368,18 @@ export default function ApplyJobPage() {
       "Upload a new resume" to continue.
     </p>
   )}
+
+  <div className="apply-resume-detail">
+    <label htmlFor="applicationNotes">Notes (optional)</label>
+    <textarea
+      id="applicationNotes"
+      value={notes}
+      onChange={e => setNotes(e.target.value)}
+      placeholder="Add any notes for this application..."
+      rows={4}
+    />
+    <small>You can leave this field empty.</small>
+  </div>
 
   <div className="apply-form-footer">
     <p>

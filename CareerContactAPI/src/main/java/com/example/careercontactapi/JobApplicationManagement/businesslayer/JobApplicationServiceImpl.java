@@ -91,6 +91,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                 .resumeId(resume.getId())
                 .status(JobApplicationStatus.APPLIED.value())
                 .appliedAt(LocalDateTime.now())
+                .notes(requestModel == null ? null : requestModel.notes())
                 .build();
 
         emailService.sendNewApplicantAlert(application, jobPosting);
@@ -158,7 +159,7 @@ public class JobApplicationServiceImpl implements JobApplicationService {
                     HttpStatus.NOT_FOUND,
                     "Application with id " + applicationId
                             + " not found for job posting " + jobId
-                );
+            );
         }
 
         if (applicationStatus.equals(JobApplicationStatus.INTERVIEW)) {

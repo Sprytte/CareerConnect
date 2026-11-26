@@ -42,5 +42,7 @@ CREATE TABLE IF NOT EXISTS job_applications (
     applied_at TIMESTAMP NOT NULL,
     interview_time_slot TIMESTAMP,
     interview_alerted BOOLEAN NOT NULL DEFAULT FALSE,
+    notes TEXT NULL,
     UNIQUE (job_posting_id, user_id)
 );
+
