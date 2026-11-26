@@ -44,3 +44,11 @@ CREATE TABLE IF NOT EXISTS job_applications (
     interview_alerted BOOLEAN NOT NULL DEFAULT FALSE,
     UNIQUE (job_posting_id, user_id)
 );
+
+CREATE TABLE IF NOT EXISTS saved_jobs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id VARCHAR(64) NOT NULL,
+    job_posting_id INTEGER NOT NULL,
+    saved_at TIMESTAMP NOT NULL,
+    UNIQUE (user_id, job_posting_id)
+);
