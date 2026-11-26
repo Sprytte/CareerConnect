@@ -33,7 +33,10 @@ export default function SiteHeader() {
           )}
 
           {signedIn && session.user.role === 'JOB_SEEKER' && (
-            <NavLink to="/account/applications">Applications</NavLink>
+            <>
+              <NavLink to="/account/applications">Applications</NavLink>
+              <NavLink to="/account/saved-jobs">Saved jobs</NavLink>
+            </>
           )}
         </nav>
 

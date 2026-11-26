@@ -14,6 +14,7 @@ import RoleGate from './auth/RoleGate'
 import { NewJobPage, MyJobsPage } from './jobs/JobPages'
 import PostingApplicationsPage from './jobs/PostingApplicationsPage'
 import ApplyJobPage from './jobs/ApplyJobPage'
+import SavedJobs from './pages/SavedJobs.tsx'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -29,6 +30,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/account/resume" element={<Resume />} />
             <Route path="/account/resume/feedback" element={<ResumeFeedback />} />
             <Route path="/account/applications" element={<Applications />} />
+            <Route path="/account/saved-jobs" element={<SavedJobs />} />
             <Route path="/jobs/new" element={<NewJobPage />} />
             <Route path="/account/jobs" element={<MyJobsPage />} />
             <Route path="/account/jobs/applications" element={<PostingApplicationsPage />} />

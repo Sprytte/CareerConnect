@@ -3,11 +3,15 @@ import { Link } from 'react-router-dom'
 import '../styles/SearchJobs.css'
 import SiteHeader from './SiteHeader'
 import SiteFooter from './SiteFooter'
-import { useSession } from '../auth/session'
+import { loginUrl, useSession } from '../auth/session'
 import { jobRequest, type Job } from '../jobs/jobApi'
+import { useSavedJobs } from '../savedJobs/useSavedJobs'
+import SaveJobButton from './SaveJobButton'
 
 export default function SearchJobs() {
   const session = useSession()
+  // Only job seekers keep saved jobs; recruiters and visitors see no save button.
+  const savedJobs = useSavedJobs(session.status === 'signed-in' && session.user.role === 'JOB_SEEKER')
 
   const [jobs, setJobs] = useState<Job[]>([])
   const [loading, setLoading] = useState(true)
@@ -156,6 +160,39 @@ export default function SearchJobs() {
           </button>
         </section>
 
+        {savedJobs.status !== 'off' && (
+          <div className="search-saved-bar">
+            <Link to="/account/saved-jobs">
+              View my saved jobs <span aria-hidden="true">↗</span>
+            </Link>
+
+            {savedJobs.status === 'error' && (
+              <span className="search-saved-notice--error" role="alert">
+                Your saved jobs could not be loaded.{' '}
+                <button type="button" onClick={savedJobs.retry}>
+                  Try again
+                </button>
+              </span>
+            )}
+
+            {savedJobs.notice && (
+              <span
+                className={
+                  savedJobs.notice.kind === 'error'
+                    ? 'search-saved-notice--error'
+                    : undefined
+                }
+                role={savedJobs.notice.kind === 'error' ? 'alert' : 'status'}
+              >
+                {savedJobs.notice.message}
+                {savedJobs.notice.sessionExpired && (
+                  <> <a href={loginUrl}>Sign in</a></>
+                )}
+              </span>
+            )}
+          </div>
+        )}
+
         {loading && <p>Loading job postings...</p>}
 
         {error && (
@@ -221,6 +258,16 @@ export default function SearchJobs() {
                             Deadline {formatDate(job.deadline)}
                           </span>
                         </div>
+
+                        {savedJobs.status === 'ready' && (!expired || savedJobs.isSaved(job.id)) && (
+                          <SaveJobButton
+                            jobName={job.jobName}
+                            saved={savedJobs.isSaved(job.id)}
+                            pending={savedJobs.pendingId === job.id}
+                            disabled={savedJobs.pendingId !== null}
+                            onToggle={() => savedJobs.toggle(job)}
+                          />
+                        )}
 
                         <button
                           className="view-details-button"
