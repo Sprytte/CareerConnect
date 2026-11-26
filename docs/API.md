@@ -610,6 +610,46 @@ DELETE /api/v1/account/applications/{applicationId}
 Only the applicant can withdraw the application, and withdrawal is allowed
 before the job posting deadline. The endpoint returns `204 No Content`.
 
+## Saved jobs endpoints
+
+All saved-jobs endpoints require an authenticated OIDC session of a job seeker
+account and derive the account from it; there is no caller-selected user ID.
+No session returns `401 Unauthorized`; a recruiter account, or an account that
+has not chosen a role, returns `403 Forbidden`.
+
+### List saved jobs
+
+```http
+GET /api/v1/account/saved-jobs
+```
+
+Returns `200 OK` with the signed-in user's saved jobs, most recently saved
+first, and `Cache-Control: no-store`. An account with nothing saved returns
+`[]`. Each object has integer `jobId`, `savedAt` (local ISO date-time) and
+`job`, a `JobPostingResponseModel` as returned by the job posting endpoints.
+`job` is `null` when the posting was deleted after it was saved, so the entry
+can still be shown and removed. A posting archived after it was saved stays in
+the list with `job.archived` set to `true`.
+
+### Save a job
+
+```http
+PUT /api/v1/account/saved-jobs/{jobId}
+```
+
+No body. Returns `200 OK` with the saved-job object described above. Saving a
+job that is already saved keeps the original entry and also returns 200.
+Returns `404 Not Found` when the job posting does not exist and
+`400 Bad Request` when it is archived.
+
+### Remove a saved job
+
+```http
+DELETE /api/v1/account/saved-jobs/{jobId}
+```
+
+Returns `204 No Content`, including when the job was not saved.
+
 ## Application endpoints
 
 ### Update an applicant's status
