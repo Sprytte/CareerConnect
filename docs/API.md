@@ -751,6 +751,16 @@ DOCX file the text is extracted on the server and sent as plain text. The file
 is processed in memory: it is not stored and is not added to the user's saved
 resumes. The call can take up to a minute.
 
+**Prompt handling**
+
+The resume is treated as untrusted input. The review instructions are sent in
+the request's system instruction and the user content holds only the resume;
+DOCX text is wrapped in markers that change on every request. The model must
+reply with a JSON object matching `summary`, `strengths` and `improvements`.
+A reply in any other format, for example one that follows instructions hidden
+in the resume, is not returned as feedback: the endpoint answers
+`502 Bad Gateway` instead.
+
 **Configuration**
 
 | Environment variable | Required | Description |
